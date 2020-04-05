@@ -14,5 +14,5 @@ web-deps:
 	@cd web; cnpm i
 
 web-build: web-deps
-	@cd web; yarn build
+	@cd web; cnpm build
 	@go generate ./web
