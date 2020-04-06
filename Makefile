@@ -24,7 +24,7 @@ web-build: web-deps
 	@go generate ./web
 
 ui-server:
-	DASH_DISABLE_OPEN_BROWSER=false DASH_LISTENER_ADDR=localhost:3001 $(GOCMD) run ./cmd/apt dash
+	DASH_DISABLE_OPEN_BROWSER=false DASH_LISTENER_ADDR=localhost:3001 $(GOCMD) run ./cmd/apt/main.go dash
 
 ui-client:
 	cd web; API_BASE=http://localhost:3001 npm run start
