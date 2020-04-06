@@ -10,7 +10,9 @@ async function buildRequest (params) {
     Accept: 'application/json',
     'Content-Type': 'application/json'
   }
-  const response = await fetch(endpoint, {headers})
+  const response = await fetch(endpoint, {
+    headers
+  })
   const json = await response.json()
   return json
 }

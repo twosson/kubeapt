@@ -5,7 +5,7 @@ import './styles.scss'
 function Header () {
   return (
     <header className='header'>
-      <AptLogoHorizontal className='header--apt-logo' />
+      <AptLogoHorizontal className='header--heptio-logo' />
     </header>
   )
 }

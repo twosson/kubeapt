@@ -1,4 +1,4 @@
-@import '../../css/variables/variables.scss';
+@import '~css/variables/variables.scss';
 
 .header {
   @include box-shadow;
@@ -12,7 +12,7 @@
   padding-right: 20px;
 }
 
-.header--apt-logo {
+.header--heptio-logo {
   height: 44px;
   padding-top: 4px;
   width: 100px;
