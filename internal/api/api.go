@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"github.com/twosson/kubeapt/internal/overview"
+	"log"
 	"net/http"
 )
 
@@ -23,7 +24,9 @@ func respondWithError(w http.ResponseWriter, code int, message string) {
 	}}
 
 	w.WriteHeader(code)
-	_ = json.NewEncoder(w).Encode(r)
+	if err := json.NewEncoder(w).Encode(r); err != nil {
+		log.Printf("encoding response error: %v", err)
+	}
 }
 
 // API is the API for the dashboard client
@@ -41,23 +44,14 @@ func New(prefix string, o overview.Interface) *API {
 	namespacesService := newNamespaces(o)
 	s.Handle("/namespaces", namespacesService)
 
-	navigationService := &navigation{}
+	navigationService := newNavigation(o)
 	s.Handle("/navigation", navigationService)
 
 	contentService := &content{}
 	s.Handle("/content/{path:.*}", contentService)
 
 	router.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusNotFound)
-
-		resp := &notFoundResponse{
-			Error: errorResponse{
-				Code:    http.StatusNotFound,
-				Message: "not found",
-			},
-		}
-
-		json.NewEncoder(w).Encode(resp)
+		respondWithError(w, http.StatusNotFound, "not found")
 	})
 
 	return &API{mux: router}

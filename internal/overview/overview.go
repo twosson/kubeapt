@@ -29,8 +29,8 @@ func (c *ClusterOverview) Namespaces() ([]string, error) {
 	return c.client.Namespace.Names()
 }
 
-func (c *ClusterOverview) Navigation() error {
-	return &notImplemented{name: "Navigation"}
+func (c *ClusterOverview) Navigation() (*Navigation, error) {
+	return navigationEntries()
 }
 
 func (c *ClusterOverview) Content(path string) error {

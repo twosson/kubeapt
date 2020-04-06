@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"github.com/twosson/kubeapt/internal/overview"
+	"log"
 	"net/http"
 )
 
@@ -28,5 +29,7 @@ func (n *namespaces) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	nr := &namespacesResponse{Namespaces: names}
 
-	_ = json.NewEncoder(w).Encode(nr)
+	if err := json.NewEncoder(w).Encode(nr); err != nil {
+		log.Printf("encoding namespaces error: %v", err)
+	}
 }

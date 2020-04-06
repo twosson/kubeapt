@@ -18,8 +18,8 @@ func (s *SimpleClusterOverview) Namespaces() ([]string, error) {
 	return names, nil
 }
 
-func (s *SimpleClusterOverview) Navigation() error {
-	return nil
+func (s *SimpleClusterOverview) Navigation() (*overview.Navigation, error) {
+	return nil, nil
 }
 
 func (s *SimpleClusterOverview) Content(path string) error {

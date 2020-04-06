@@ -17,7 +17,7 @@ func TestSimpleClusterOverview_Namespaces(t *testing.T) {
 
 func TestSimpleClusterOverview_Navigation(t *testing.T) {
 	seo := NewSimpleClusterOverview()
-	err := seo.Navigation()
+	_, err := seo.Navigation()
 	require.NoError(t, err)
 }
 
