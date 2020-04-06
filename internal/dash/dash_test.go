@@ -3,6 +3,7 @@ package dash
 import (
 	"context"
 	"fmt"
+	"github.com/twosson/kubeapt/internal/cluster/fake"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -53,7 +54,9 @@ func TestDash_Run(t *testing.T) {
 				}), nil
 			}
 
-			d := newDash(listener, namespace, uiURL)
+			o := fake.NewSimpleClusterOverview()
+
+			d := newDash(listener, namespace, uiURL, o)
 			d.willOpenBrowser = false
 			d.defaultHandler = defaultHandler
 
@@ -114,7 +117,9 @@ func TestDash_routes(t *testing.T) {
 			listener, err := net.Listen("tcp", "127.0.0.1:0")
 			require.NoError(t, err)
 
-			d := newDash(listener, namespace, uiURL)
+			o := fake.NewSimpleClusterOverview()
+
+			d := newDash(listener, namespace, uiURL, o)
 			d.apiHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				fmt.Fprint(w, "{}")
 			})

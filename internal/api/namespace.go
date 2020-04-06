@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"github.com/twosson/kubeapt/internal/overview"
 	"net/http"
 )
 
@@ -10,16 +11,22 @@ type namespacesResponse struct {
 }
 
 type namespaces struct {
+	overview overview.Interface
 }
 
 var _ http.Handler = (*namespaces)(nil)
 
-func (n *namespaces) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	nr := &namespacesResponse{Namespaces: []string{
-		"default",
-		"app-1",
-		"app-2",
-	}}
+func newNamespaces(o overview.Interface) *namespaces {
+	return &namespaces{overview: o}
+}
 
-	json.NewEncoder(w).Encode(nr)
+func (n *namespaces) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	names, err := n.overview.Namespaces()
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	nr := &namespacesResponse{Namespaces: names}
+
+	_ = json.NewEncoder(w).Encode(nr)
 }

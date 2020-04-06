@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/twosson/kubeapt/internal/cluster/fake"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -40,7 +41,8 @@ func TestAPI_routes(t *testing.T) {
 	for _, tc := range cases {
 		name := fmt.Sprintf("GET: %s", tc.path)
 		t.Run(name, func(t *testing.T) {
-			srv := New("/")
+			o := fake.NewSimpleClusterOverview()
+			srv := New("/", o)
 
 			ts := httptest.NewServer(srv)
 			defer ts.Close()
@@ -55,7 +57,6 @@ func TestAPI_routes(t *testing.T) {
 			defer res.Body.Close()
 
 			assert.Equal(t, tc.expectedCode, res.StatusCode)
-
 		})
 	}
 

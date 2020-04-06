@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"github.com/gorilla/mux"
+	"github.com/twosson/kubeapt/internal/overview"
 	"net/http"
 )
 
@@ -15,6 +16,16 @@ type notFoundResponse struct {
 	Error errorResponse `json:"error,omitempty"`
 }
 
+func respondWithError(w http.ResponseWriter, code int, message string) {
+	r := &notFoundResponse{Error: errorResponse{
+		Code:    code,
+		Message: message,
+	}}
+
+	w.WriteHeader(code)
+	_ = json.NewEncoder(w).Encode(r)
+}
+
 // API is the API for the dashboard client
 type API struct {
 	mux *mux.Router
@@ -23,11 +34,11 @@ type API struct {
 var _ http.Handler = (*API)(nil)
 
 // New creates an instance of API.
-func New(prefix string) *API {
+func New(prefix string, o overview.Interface) *API {
 	router := mux.NewRouter()
 	s := router.PathPrefix(prefix).Subrouter()
 
-	namespacesService := &namespaces{}
+	namespacesService := newNamespaces(o)
 	s.Handle("/namespaces", namespacesService)
 
 	navigationService := &navigation{}
