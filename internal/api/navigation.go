@@ -2,13 +2,13 @@ package api
 
 import (
 	"encoding/json"
-	"github.com/twosson/kubeapt/internal/overview"
+	"github.com/twosson/kubeapt/internal/apt"
 	"log"
 	"net/http"
 )
 
 type navigationResponse struct {
-	Sections []*overview.Navigation `json:"sections,omitempty"`
+	Sections []*apt.Navigation `json:"sections,omitempty"`
 }
 
 type navigationsResponse struct {
@@ -16,23 +16,21 @@ type navigationsResponse struct {
 }
 
 type navigation struct {
-	overview overview.Interface
+	sections []*apt.Navigation
 }
 
 var _ http.Handler = (*navigation)(nil)
 
-func newNavigation(o overview.Interface) *navigation {
-	return &navigation{overview: o}
+func newNavigation(sections []*apt.Navigation) *navigation {
+	return &navigation{
+		sections: sections,
+	}
 }
 
 func (n *navigation) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	overviewNav, err := n.overview.Navigation()
-	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, err.Error())
-		return
+	nr := navigationResponse{
+		Sections: n.sections,
 	}
-
-	nr := &navigationResponse{Sections: []*overview.Navigation{overviewNav}}
 
 	if err := json.NewEncoder(w).Encode(nr); err != nil {
 		log.Printf("encoding navigation error: %v", err)

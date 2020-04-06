@@ -2,7 +2,7 @@ package api
 
 import (
 	"encoding/json"
-	"github.com/twosson/kubeapt/internal/overview"
+	"github.com/twosson/kubeapt/internal/cluster"
 	"log"
 	"net/http"
 )
@@ -12,17 +12,19 @@ type namespacesResponse struct {
 }
 
 type namespaces struct {
-	overview overview.Interface
+	nsClient cluster.NamespaceInterface
 }
 
 var _ http.Handler = (*namespaces)(nil)
 
-func newNamespaces(o overview.Interface) *namespaces {
-	return &namespaces{overview: o}
+func newNamespaces(nsClient cluster.NamespaceInterface) *namespaces {
+	return &namespaces{
+		nsClient: nsClient,
+	}
 }
 
 func (n *namespaces) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	names, err := n.overview.Namespaces()
+	names, err := n.nsClient.Names()
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return

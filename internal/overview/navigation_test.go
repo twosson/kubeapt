@@ -7,8 +7,9 @@ import (
 )
 
 func TestNavigationEntries(t *testing.T) {
-	got, err := navigationEntries()
+	got, err := navigationEntries("/content/overview")
 	require.NoError(t, err)
 
 	assert.Equal(t, got.Title, "Overview")
+	assert.Equal(t, got.Path, "/content/overview")
 }

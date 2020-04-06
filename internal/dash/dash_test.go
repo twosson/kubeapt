@@ -3,6 +3,7 @@ package dash
 import (
 	"context"
 	"fmt"
+	"github.com/twosson/kubeapt/internal/api"
 	"github.com/twosson/kubeapt/internal/cluster/fake"
 	"io/ioutil"
 	"net"
@@ -54,9 +55,13 @@ func TestDash_Run(t *testing.T) {
 				}), nil
 			}
 
+			nsClient := fake.NewNamespaceClient()
+
 			o := fake.NewSimpleClusterOverview()
 
-			d := newDash(listener, namespace, uiURL, o)
+			d, err := newDash(listener, namespace, uiURL, nsClient, o)
+			require.NoError(t, err)
+
 			d.willOpenBrowser = false
 			d.defaultHandler = defaultHandler
 
@@ -117,12 +122,15 @@ func TestDash_routes(t *testing.T) {
 			listener, err := net.Listen("tcp", "127.0.0.1:0")
 			require.NoError(t, err)
 
+			nsClient := fake.NewNamespaceClient()
+
 			o := fake.NewSimpleClusterOverview()
 
-			d := newDash(listener, namespace, uiURL, o)
-			d.apiHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				fmt.Fprint(w, "{}")
-			})
+			d, err := newDash(listener, namespace, uiURL, nsClient, o)
+			require.NoError(t, err)
+
+			service := api.New(apiPathPrefix, nsClient)
+			d.apiHandler = service
 
 			d.defaultHandler = func() (handler http.Handler, err error) {
 				return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
