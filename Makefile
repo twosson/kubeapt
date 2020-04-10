@@ -23,6 +23,9 @@ web-build: web-deps
 	@cd web; cnpm build
 	@go generate ./web
 
+embed-go: web-build
+	@cd web; rice embed-go
+
 ui-server:
 	DASH_DISABLE_OPEN_BROWSER=false DASH_LISTENER_ADDR=localhost:3001 $(GOCMD) run ./cmd/apt/main.go dash
 

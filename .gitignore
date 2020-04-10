@@ -16,3 +16,6 @@
 
 # .idea folder
 .idea/
+
+# goreleaser
+/dist

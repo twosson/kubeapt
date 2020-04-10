@@ -5,7 +5,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func newVersionCmd(GitCommit string, BuildTime string) *cobra.Command {
+func newVersionCmd(version string, gitCommit string, buildTime string) *cobra.Command {
 
 	versionCmd := &cobra.Command{
 		Use:   "version",
@@ -13,9 +13,9 @@ func newVersionCmd(GitCommit string, BuildTime string) *cobra.Command {
 		Long:  "Version for hcli binary",
 		Run: func(cmd *cobra.Command, args []string) {
 			out := cmd.OutOrStdout()
-			fmt.Fprintln(out, "Version: ", "pre-alpha")
-			fmt.Fprintln(out, "Git commit: ", GitCommit)
-			fmt.Fprintln(out, "Built: ", BuildTime)
+			fmt.Fprintln(out, "Version: ", version)
+			fmt.Fprintln(out, "Git commit: ", gitCommit)
+			fmt.Fprintln(out, "Built: ", buildTime)
 		},
 	}
 
