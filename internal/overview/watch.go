@@ -118,6 +118,9 @@ func (w *Watch) resources() ([]schema.GroupVersionResource, error) {
 
 	for _, list := range lists {
 		// todo kubernetes api-resource: the server does not allow this method on the requested resource
+		if list.GroupVersion == "metrics.k8s.io/v1beta1" {
+			continue
+		}
 		gv, err := schema.ParseGroupVersion(list.GroupVersion)
 		if err != nil {
 			return nil, err
