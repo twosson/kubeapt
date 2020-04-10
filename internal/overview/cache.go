@@ -2,6 +2,7 @@ package overview
 
 import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"log"
 	"sync"
 )
 
@@ -20,19 +21,53 @@ type CacheKey struct {
 	Name       string
 }
 
+// MemoryCacheOpt is an option for configuring memory cache.
+type MemoryCacheOpt func(*MemoryCache)
+
+// CacheAction is a cache action.
+type CacheAction string
+
+const (
+	// CacheStore is a store action.
+	CacheStore CacheAction = "store"
+	// CacheDelete is a delete action.
+	CacheDelete CacheAction = "delete"
+)
+
+// CacheNotification is a notifcation for a cache.
+type CacheNotification struct {
+	CacheKey CacheKey
+	Action   CacheAction
+}
+
+// CacheNotificationOpt sets a channel that will receive a notification
+// every time cache performs an add/delete.
+func CacheNotificationOpt(ch chan<- CacheNotification) MemoryCacheOpt {
+	return func(c *MemoryCache) {
+		c.notifyCh = ch
+	}
+}
+
 // MemoryCache stores a cache of Kubernetes objects in memory.
 type MemoryCache struct {
-	store map[CacheKey]*unstructured.Unstructured
-	mu    sync.Mutex
+	store    map[CacheKey]*unstructured.Unstructured
+	mu       sync.Mutex
+	notifyCh chan<- CacheNotification
 }
 
 var _ Cache = (*MemoryCache)(nil)
 
 // NewMemoryCache creates on instance of MemoryCache.
-func NewMemoryCache() *MemoryCache {
-	return &MemoryCache{
+func NewMemoryCache(opts ...MemoryCacheOpt) *MemoryCache {
+	mc := &MemoryCache{
 		store: make(map[CacheKey]*unstructured.Unstructured),
 	}
+
+	for _, opt := range opts {
+		opt(mc)
+	}
+
+	return mc
 }
 
 // Reset resets the cache.
@@ -57,7 +92,11 @@ func (m *MemoryCache) Store(obj *unstructured.Unstructured) error {
 		Name:       obj.GetName(),
 	}
 
+	log.Printf("cache: store %+v", key)
+
 	m.store[key] = obj
+	m.notify(CacheStore, key)
+
 	return nil
 }
 
@@ -119,5 +158,16 @@ func (m *MemoryCache) Delete(obj *unstructured.Unstructured) error {
 
 	delete(m.store, key)
 
+	log.Printf("cache: delete %+v", key)
+	m.notify(CacheDelete, key)
+
 	return nil
+}
+
+func (m *MemoryCache) notify(action CacheAction, key CacheKey) {
+	if m.notifyCh == nil {
+		return
+	}
+
+	m.notifyCh <- CacheNotification{Action: action, CacheKey: key}
 }
