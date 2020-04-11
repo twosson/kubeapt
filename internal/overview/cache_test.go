@@ -2,11 +2,12 @@ package overview
 
 import (
 	"fmt"
+	"math/rand"
+	"testing"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"math/rand"
-	"testing"
 )
 
 func TestMemoryCache_Store(t *testing.T) {
@@ -30,6 +31,7 @@ func TestMemoryCache_Store(t *testing.T) {
 }
 
 func TestMemoryCache_Retrieve(t *testing.T) {
+
 	cases := []struct {
 		name        string
 		key         CacheKey
@@ -66,8 +68,7 @@ func TestMemoryCache_Retrieve(t *testing.T) {
 			name: "ns",
 			key: CacheKey{
 				Namespace: "default",
-			},
-			expectedLen: 4,
+			}, expectedLen: 4,
 		},
 	}
 
@@ -119,7 +120,7 @@ func TestMemoryCache_Events(t *testing.T) {
 			name: "with matches",
 			eventFactory: func(obj *unstructured.Unstructured) []*unstructured.Unstructured {
 				return []*unstructured.Unstructured{
-					getEvent(obj),
+					genEvent(obj),
 				}
 			},
 			expected: 1,
@@ -147,6 +148,7 @@ func TestMemoryCache_Events(t *testing.T) {
 			assert.Len(t, events, tc.expected)
 		})
 	}
+
 }
 
 func genObjectsSeed() []*unstructured.Unstructured {
@@ -177,12 +179,12 @@ func genObjectsSeed() []*unstructured.Unstructured {
 	return objects
 }
 
-func getEvent(u *unstructured.Unstructured) *unstructured.Unstructured {
+func genEvent(u *unstructured.Unstructured) *unstructured.Unstructured {
 	o := &unstructured.Unstructured{}
 	o.SetNamespace("default")
 	o.SetAPIVersion("v1")
 	o.SetKind("Event")
-	o.SetNamespace(fmt.Sprintf("event.%d", rand.Intn(100)))
+	o.SetName(fmt.Sprintf("event.%d", rand.Intn(100)))
 
 	o.Object["involvedObject"] = map[string]interface{}{
 		"apiVersion": u.GetAPIVersion(),
@@ -198,7 +200,7 @@ func genObject(name string) *unstructured.Unstructured {
 	o := &unstructured.Unstructured{}
 	o.SetNamespace("default")
 	o.SetAPIVersion("foo/v1")
-	o.SetKind("kind")
+	o.SetKind("Kind")
 	o.SetName(name)
 
 	return o

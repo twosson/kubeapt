@@ -108,14 +108,16 @@ func (t *labelsText) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&m)
 }
 
-// newListText create an instance of listText.
+// listText is text that contains a list.
 type listText struct {
 	List []string
 }
 
 // newListText create an instance of listText.
 func newListText(list []string) *listText {
-	return &listText{List: list}
+	return &listText{
+		List: list,
+	}
 }
 
 func (t *listText) MarshalJSON() ([]byte, error) {

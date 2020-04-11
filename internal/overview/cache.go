@@ -1,10 +1,11 @@
 package overview
 
 import (
+	"sync"
+
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
-	"sync"
 )
 
 // Cache stores Kubernetes objects.
@@ -12,6 +13,7 @@ type Cache interface {
 	Store(obj *unstructured.Unstructured) error
 	Retrieve(key CacheKey) ([]*unstructured.Unstructured, error)
 	Delete(obj *unstructured.Unstructured) error
+
 	Events(obj *unstructured.Unstructured) ([]*unstructured.Unstructured, error)
 }
 
@@ -52,14 +54,15 @@ func CacheNotificationOpt(ch chan<- CacheNotification) MemoryCacheOpt {
 
 // MemoryCache stores a cache of Kubernetes objects in memory.
 type MemoryCache struct {
-	store    map[CacheKey]*unstructured.Unstructured
+	store map[CacheKey]*unstructured.Unstructured
+
 	mu       sync.Mutex
 	notifyCh chan<- CacheNotification
 }
 
 var _ Cache = (*MemoryCache)(nil)
 
-// NewMemoryCache creates on instance of MemoryCache.
+// NewMemoryCache creates an instance of MemoryCache.
 func NewMemoryCache(opts ...MemoryCacheOpt) *MemoryCache {
 	mc := &MemoryCache{
 		store: make(map[CacheKey]*unstructured.Unstructured),
@@ -73,19 +76,19 @@ func NewMemoryCache(opts ...MemoryCacheOpt) *MemoryCache {
 }
 
 // Reset resets the cache.
-func (m *MemoryCache) Reset() {
-	m.mu.Lock()
-	defer m.mu.Unlock()
+func (mc *MemoryCache) Reset() {
+	mc.mu.Lock()
+	defer mc.mu.Unlock()
 
-	for k := range m.store {
-		delete(m.store, k)
+	for k := range mc.store {
+		delete(mc.store, k)
 	}
 }
 
 // Store stores an object to the object.
-func (m *MemoryCache) Store(obj *unstructured.Unstructured) error {
-	m.mu.Lock()
-	defer m.mu.Unlock()
+func (mc *MemoryCache) Store(obj *unstructured.Unstructured) error {
+	mc.mu.Lock()
+	defer mc.mu.Unlock()
 
 	key := CacheKey{
 		Namespace:  obj.GetNamespace(),
@@ -94,20 +97,20 @@ func (m *MemoryCache) Store(obj *unstructured.Unstructured) error {
 		Name:       obj.GetName(),
 	}
 
-	m.store[key] = obj
-	m.notify(CacheStore, key)
+	mc.store[key] = obj
+	mc.notify(CacheStore, key)
 
 	return nil
 }
 
 // Retrieve retrieves an object from the cache.
-func (m *MemoryCache) Retrieve(key CacheKey) ([]*unstructured.Unstructured, error) {
-	m.mu.Lock()
-	defer m.mu.Unlock()
+func (mc *MemoryCache) Retrieve(key CacheKey) ([]*unstructured.Unstructured, error) {
+	mc.mu.Lock()
+	defer mc.mu.Unlock()
 
 	var objs []*unstructured.Unstructured
 
-	for k, v := range m.store {
+	for k, v := range mc.store {
 		if k.Namespace != key.Namespace {
 			continue
 		}
@@ -140,9 +143,9 @@ func (m *MemoryCache) Retrieve(key CacheKey) ([]*unstructured.Unstructured, erro
 }
 
 // Delete deletes an object from the cache.
-func (m *MemoryCache) Delete(obj *unstructured.Unstructured) error {
-	m.mu.Lock()
-	defer m.mu.Unlock()
+func (mc *MemoryCache) Delete(obj *unstructured.Unstructured) error {
+	mc.mu.Lock()
+	defer mc.mu.Unlock()
 
 	namespace := obj.GetNamespace()
 	apiVersion := obj.GetAPIVersion()
@@ -156,21 +159,21 @@ func (m *MemoryCache) Delete(obj *unstructured.Unstructured) error {
 		Name:       name,
 	}
 
-	delete(m.store, key)
+	delete(mc.store, key)
 
-	m.notify(CacheDelete, key)
+	mc.notify(CacheDelete, key)
 
 	return nil
 }
 
 // Events returns events for an object.
-func (m *MemoryCache) Events(u *unstructured.Unstructured) ([]*unstructured.Unstructured, error) {
-	m.mu.Lock()
-	defer m.mu.Unlock()
+func (mc *MemoryCache) Events(u *unstructured.Unstructured) ([]*unstructured.Unstructured, error) {
+	mc.mu.Lock()
+	defer mc.mu.Unlock()
 
 	var events []*unstructured.Unstructured
 
-	for _, obj := range m.store {
+	for _, obj := range mc.store {
 
 		if obj.GetAPIVersion() != "v1" && obj.GetKind() != "Event" {
 			continue
@@ -195,10 +198,10 @@ func (m *MemoryCache) Events(u *unstructured.Unstructured) ([]*unstructured.Unst
 	return events, nil
 }
 
-func (m *MemoryCache) notify(action CacheAction, key CacheKey) {
-	if m.notifyCh == nil {
+func (mc *MemoryCache) notify(action CacheAction, key CacheKey) {
+	if mc.notifyCh == nil {
 		return
 	}
 
-	m.notifyCh <- CacheNotification{Action: action, CacheKey: key}
+	mc.notifyCh <- CacheNotification{Action: action, CacheKey: key}
 }

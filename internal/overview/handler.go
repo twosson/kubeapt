@@ -51,7 +51,7 @@ func newHandler(prefix string, g generator, sfn streamFn) *handler {
 
 		path := strings.TrimPrefix(r.URL.Path, prefix)
 		namespace := r.URL.Query().Get("namespace")
-		poll := r.URL.Query().Get("pool")
+		poll := r.URL.Query().Get("poll")
 
 		if poll != "" {
 			var eventTimeout time.Duration
