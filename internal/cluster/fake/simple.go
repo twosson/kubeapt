@@ -38,7 +38,7 @@ func (sco *SimpleClusterOverview) SetNamespace(namespace string) error {
 	return nil
 }
 
-// Starts starts the module. It ia a no-op
+// Start starts the module. It ia a no-op
 func (sco *SimpleClusterOverview) Start() error {
 	return nil
 }

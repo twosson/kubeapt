@@ -3,10 +3,11 @@ package overview
 import "encoding/json"
 
 type contentResponse struct {
-	Contents []content `json:"contents,omitempty"`
+	Contents []Content `json:"contents,omitempty"`
 }
 
-type content interface {
+// Content is content served by the overview API.
+type Content interface {
 }
 
 type table struct {
@@ -97,6 +98,25 @@ func (t *labelsText) MarshalJSON() ([]byte, error) {
 	m := map[string]interface{}{
 		"type":   "labels",
 		"labels": t.Labels,
+	}
+
+	return json.Marshal(&m)
+}
+
+// newListText create an instance of listText.
+type listText struct {
+	List []string
+}
+
+// newListText create an instance of listText.
+func newListText(list []string) *listText {
+	return &listText{List: list}
+}
+
+func (t *listText) MarshalJSON() ([]byte, error) {
+	m := map[string]interface{}{
+		"type": "list",
+		"list": t.List,
 	}
 
 	return json.Marshal(&m)

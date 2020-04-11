@@ -2,17 +2,19 @@ package overview
 
 import (
 	"fmt"
+	"github.com/davecgh/go-spew/spew"
 	"github.com/twosson/kubeapt/internal/apt"
 	"github.com/twosson/kubeapt/internal/cluster"
 	"log"
 	"net/http"
+	"os"
 )
 
 // ClusterOverview is an API for generating a cluster overview.
 type ClusterOverview struct {
 	client       cluster.ClientInterface
 	namespace    string
-	watchFactory func(namespace string, clusterClient cluster.ClientInterface, cache Cache) Watch2
+	watchFactory func(namespace string, clusterClient cluster.ClientInterface, cache Cache) Watch
 	cache        Cache
 	stopFn       func()
 	generator    *realGenerator
@@ -20,7 +22,21 @@ type ClusterOverview struct {
 
 // NewClusterOverview creates an instance of ClusterOverview.
 func NewClusterOverview(client cluster.ClientInterface, namespace string) *ClusterOverview {
-	cache := NewMemoryCache()
+	var opts []MemoryCacheOpt
+
+	if os.Getenv("DASH_VERBOSE_CACHE") != "" {
+		ch := make(chan CacheNotification)
+
+		go func() {
+			for notif := range ch {
+				spew.Dump(notif)
+			}
+		}()
+
+		opts = append(opts, CacheNotificationOpt(ch))
+	}
+
+	cache := NewMemoryCache(opts...)
 	g := newGenerator(cache, defaultPathFilters)
 
 	return &ClusterOverview{
@@ -104,6 +120,6 @@ func (c *ClusterOverview) watch(namespace string) (StopFunc, error) {
 	return watch.Start()
 }
 
-func watchFactory(namespace string, clusterClient cluster.ClientInterface, cache Cache) Watch2 {
+func watchFactory(namespace string, clusterClient cluster.ClientInterface, cache Cache) Watch {
 	return NewWatch(namespace, clusterClient, cache)
 }

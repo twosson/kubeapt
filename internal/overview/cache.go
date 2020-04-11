@@ -163,6 +163,7 @@ func (m *MemoryCache) Delete(obj *unstructured.Unstructured) error {
 	return nil
 }
 
+// Events returns events for an object.
 func (m *MemoryCache) Events(u *unstructured.Unstructured) ([]*unstructured.Unstructured, error) {
 	var events []*unstructured.Unstructured
 
