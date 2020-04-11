@@ -42,7 +42,7 @@ func NewClusterOverview(client cluster.ClientInterface, namespace string) *Clust
 	pathFilters = append(pathFilters, rootDescriber.PathFilters()...)
 	pathFilters = append(pathFilters, eventsDescriber.PathFilters()...)
 
-	g := newGenerator(cache, pathFilters)
+	g := newGenerator(cache, pathFilters, client)
 
 	return &ClusterOverview{
 		namespace:    namespace,

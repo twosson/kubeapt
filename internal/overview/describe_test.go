@@ -1,8 +1,11 @@
 package overview
 
 import (
+	"github.com/twosson/kubeapt/internal/cluster/fake"
+	"github.com/twosson/kubeapt/internal/content"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	metav1beta1 "k8s.io/apimachinery/pkg/apis/meta/v1beta1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/kubernetes/pkg/apis/core"
 	"testing"
 
@@ -39,7 +42,7 @@ func TestListDescriber(t *testing.T) {
 
 	theContent := newFakeContent(false)
 
-	otf := func(namespace, prefix string, contents *[]Content) func(*metav1beta1.Table) error {
+	otf := func(namespace, prefix string, contents *[]content.Content) func(*metav1beta1.Table) error {
 		*contents = append(*contents, theContent)
 		return func(*metav1beta1.Table) error {
 			return nil
@@ -48,10 +51,20 @@ func TestListDescriber(t *testing.T) {
 
 	d := NewListDescriber(thePath, key, listType, objectType, otf)
 
-	contents, err := d.Describe("/path", namespace, cache, fields)
+	scheme := runtime.NewScheme()
+	objects := []runtime.Object{}
+	clusterClient, err := fake.NewClient(scheme, objects)
 	require.NoError(t, err)
 
-	expected := []Content{theContent}
+	options := DescriberOptions{
+		Cache:  cache,
+		Fields: fields,
+	}
+
+	contents, err := d.Describe("/path", namespace, clusterClient, options)
+	require.NoError(t, err)
+
+	expected := []content.Content{theContent}
 
 	assert.Equal(t, expected, contents)
 
@@ -83,16 +96,26 @@ func TestObjectDescriber(t *testing.T) {
 
 	theContent := newFakeContent(false)
 
-	otf := func(namespace, prefix string, contents *[]Content) func(*metav1beta1.Table) error {
+	otf := func(namespace, prefix string, contents *[]content.Content) func(*metav1beta1.Table) error {
 		*contents = append(*contents, theContent)
 		return func(*metav1beta1.Table) error {
 			return nil
 		}
 	}
 
-	d := NewObjectDescriber(thePath, key, objectType, otf)
+	d := NewObjectDescriber(thePath, key, objectType, otf, []view.View{})
 
-	contents, err := d.Describe("/path", namespace, cache, fields)
+	scheme := runtime.NewScheme()
+	objects := []runtime.Object{}
+	clusterClient, err := fake.NewClient(scheme, objects)
+	require.NoError(t, err)
+
+	options := DescriberOptions{
+		Cache:  cache,
+		Fields: fields,
+	}
+
+	contents, err := d.Describe("/path", namespace, clusterClient, options)
 	require.NoError(t, err)
 
 	require.Len(t, contents, 2)
@@ -112,7 +135,16 @@ func TestSectionDescriber(t *testing.T) {
 
 	cache := NewMemoryCache()
 
-	got, err := d.Describe("/prefix", namespace, cache, nil)
+	scheme := runtime.NewScheme()
+	objects := []runtime.Object{}
+	clusterClient, err := fake.NewClient(scheme, objects)
+	require.NoError(t, err)
+
+	options := DescriberOptions{
+		Cache: cache,
+	}
+
+	got, err := d.Describe("/prefix", namespace, clusterClient, options)
 	require.NoError(t, err)
 
 	assert.Equal(t, stubbedContent, got)

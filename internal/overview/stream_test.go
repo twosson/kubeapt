@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/twosson/kubeapt/internal/content"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -14,7 +15,7 @@ import (
 func Test_contentStreamer(t *testing.T) {
 	w := httptest.NewRecorder()
 	ctx, cancel := context.WithCancel(context.Background())
-	g := newStubbedGenerator([]Content{newFakeContent(false)})
+	g := newStubbedGenerator([]content.Content{newFakeContent(false)}, nil)
 
 	rcv := make(chan bool, 1)
 

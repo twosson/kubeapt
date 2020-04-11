@@ -3,7 +3,11 @@ package overview
 import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/twosson/kubeapt/internal/cluster"
+	"github.com/twosson/kubeapt/internal/cluster/fake"
+	"github.com/twosson/kubeapt/internal/content"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime"
 	"testing"
 )
 
@@ -25,7 +29,7 @@ func Test_realGenerator_Generate(t *testing.T) {
 		name      string
 		path      string
 		initCache func(*spyCache)
-		expected  []Content
+		expected  []content.Content
 		isErr     bool
 	}{
 		{
@@ -59,7 +63,12 @@ func Test_realGenerator_Generate(t *testing.T) {
 				tc.initCache(cache)
 			}
 
-			g := newGenerator(cache, pathFilters)
+			scheme := runtime.NewScheme()
+			objects := []runtime.Object{}
+			clusterClient, err := fake.NewClient(scheme, objects)
+			require.NoError(t, err)
+
+			g := newGenerator(cache, pathFilters, clusterClient)
 
 			contents, err := g.Generate(tc.path, "/prefix", "default")
 			if tc.isErr {
@@ -139,7 +148,7 @@ func newStubDescriber(p string) *stubDescriber {
 	}
 }
 
-func (d *stubDescriber) Describe(string, string, Cache, map[string]string) ([]Content, error) {
+func (d *stubDescriber) Describe(string, string, cluster.ClientInterface, DescriberOptions) ([]content.Content, error) {
 	return stubbedContent, nil
 }
 
@@ -149,7 +158,7 @@ func (d *stubDescriber) PathFilters() []pathFilter {
 	}
 }
 
-var stubbedContent = []Content{newFakeContent(false)}
+var stubbedContent = []content.Content{newFakeContent(false)}
 
 type fakeContent struct {
 	isEmpty bool
