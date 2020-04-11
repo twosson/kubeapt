@@ -1,6 +1,7 @@
 package overview
 
 import (
+	"context"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"io/ioutil"
@@ -46,7 +47,7 @@ func TestHandler_routes(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			h := newHandler("/api", tc.generator)
+			h := newHandler("/api", tc.generator, stubStream)
 
 			ts := httptest.NewServer(h)
 			defer ts.Close()
@@ -70,6 +71,10 @@ func TestHandler_routes(t *testing.T) {
 		})
 	}
 }
+
+var (
+	stubStream = func(ctx context.Context, w http.ResponseWriter, ch chan []byte) {}
+)
 
 type stubbedGenerator struct{}
 

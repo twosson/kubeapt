@@ -5,7 +5,9 @@ import (
 	"k8s.io/apimachinery/pkg/util/json"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
+	"time"
 )
 
 type errorMessage struct {
@@ -37,16 +39,43 @@ func respondWithError(w http.ResponseWriter, code int, message string) {
 type handler struct {
 	mux       *mux.Router
 	generator generator
+	streamFn  streamFn
 }
 
 var _ http.Handler = (*handler)(nil)
 
-func newHandler(prefix string, g generator) *handler {
+func newHandler(prefix string, g generator, sfn streamFn) *handler {
 	router := mux.NewRouter().StrictSlash(true)
 
 	router.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
 		path := strings.TrimPrefix(r.URL.Path, prefix)
 		namespace := r.URL.Query().Get("namespace")
+		poll := r.URL.Query().Get("pool")
+
+		if poll != "" {
+			var eventTimeout time.Duration
+			timeout, err := strconv.Atoi(poll)
+			if err != nil {
+				eventTimeout = defaultEventTimeout
+			} else {
+				eventTimeout = time.Duration(timeout) * time.Second
+			}
+
+			cs := contentStreamer{
+				generator:    g,
+				w:            w,
+				path:         path,
+				prefix:       prefix,
+				namespace:    namespace,
+				streamFn:     stream,
+				eventTimeout: eventTimeout,
+			}
+
+			cs.content(r.Context())
+		}
+
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		contents, err := g.Generate(path, prefix, namespace)
 		if err != nil {
 			respondWithError(w, http.StatusNotFound, err.Error())
@@ -56,8 +85,6 @@ func newHandler(prefix string, g generator) *handler {
 		cr := &contentResponse{
 			Contents: contents,
 		}
-
-		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 
 		if err := json.NewEncoder(w).Encode(cr); err != nil {
 			log.Printf("encoding response: %v", err)

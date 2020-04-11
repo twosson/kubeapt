@@ -60,7 +60,7 @@ func (c *ClusterOverview) ContentPath() string {
 
 // Handler returns a handler for serving overview HTTP content.
 func (c *ClusterOverview) Handler(prefix string) http.Handler {
-	return newHandler(prefix, c.generator)
+	return newHandler(prefix, c.generator, stream)
 }
 
 func (c *ClusterOverview) Namespaces() ([]string, error) {

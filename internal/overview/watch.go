@@ -174,6 +174,8 @@ func consumeEvents(done <-chan struct{}, watchers []watch.Interface) (chan watch
 	}
 
 	go func() {
+		// wait for caller to signal done and
+		// start shutting the watcher down
 		<-done
 		for _, watch := range watchers {
 			watch.Stop()
