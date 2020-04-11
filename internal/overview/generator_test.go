@@ -1,7 +1,6 @@
 package overview
 
 import (
-	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -36,11 +35,6 @@ func Test_realGenerator_Generate(t *testing.T) {
 				c.spyRetrieve(key, []*unstructured.Unstructured{}, nil)
 			},
 			expected: stubbedContent,
-		},
-		{
-			name:     "stubbed content",
-			path:     "/rbac/roles",
-			expected: stubContent("/rbac/roles"),
 		},
 		{
 			name:  "invalid path",
@@ -132,7 +126,7 @@ func (c *spyCache) Delete(obj *unstructured.Unstructured) error {
 }
 
 func (c *spyCache) Events(obj *unstructured.Unstructured) ([]*unstructured.Unstructured, error) {
-	return nil, errors.New("Events not implemented")
+	return []*unstructured.Unstructured{}, nil
 }
 
 type stubDescriber struct {
@@ -155,4 +149,22 @@ func (d *stubDescriber) PathFilters() []pathFilter {
 	}
 }
 
-var stubbedContent = []Content{"content"}
+var stubbedContent = []Content{newFakeContent(false)}
+
+type fakeContent struct {
+	isEmpty bool
+}
+
+func newFakeContent(isEmpty bool) *fakeContent {
+	return &fakeContent{
+		isEmpty: isEmpty,
+	}
+}
+
+func (c *fakeContent) IsEmpty() bool {
+	return c.isEmpty
+}
+
+func (c fakeContent) MarshalJSON() ([]byte, error) {
+	return []byte(`{"type":"stubbed"}`), nil
+}

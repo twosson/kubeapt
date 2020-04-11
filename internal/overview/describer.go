@@ -2,14 +2,16 @@ package overview
 
 import (
 	"fmt"
+	"reflect"
+
 	"github.com/pkg/errors"
+	"github.com/twosson/kubeapt/internal/printers"
 	metav1beta1 "k8s.io/apimachinery/pkg/apis/meta/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/clock"
 	"k8s.io/client-go/kubernetes/scheme"
-	printers "k8s.io/kubernetes/pkg/printers"
+	kprinters "k8s.io/kubernetes/pkg/printers"
 	printersinternal "k8s.io/kubernetes/pkg/printers/internalversion"
-	"reflect"
 )
 
 type ObjecTransformFunc func(namespace, prefix string, contents *[]Content) func(*metav1beta1.Table) error
@@ -174,7 +176,7 @@ func setItemName(item interface{}, name string) {
 }
 
 func printObject(object runtime.Object, transformFunc func(*metav1beta1.Table) error) error {
-	options := printers.PrintOptions{
+	options := kprinters.PrintOptions{
 		Wide:       true,
 		ShowLabels: true,
 		WithKind:   true,
@@ -253,19 +255,25 @@ func (d *SectionDescriber) Describe(prefix, namespace string, cache Cache, field
 	var contents []Content
 
 	for _, child := range d.describers {
-		childContent, err := child.Describe(prefix, namespace, cache, fields)
+		childContents, err := child.Describe(prefix, namespace, cache, fields)
 		if err != nil {
 			return nil, err
 		}
 
-		contents = append(contents, childContent...)
+		for _, childContent := range childContents {
+			if !childContent.IsEmpty() {
+				contents = append(contents, childContent)
+			}
+		}
 	}
 
 	return contents, nil
 }
 
 func (d *SectionDescriber) PathFilters() []pathFilter {
-	var pathFilters []pathFilter
+	pathFilters := []pathFilter{
+		*newPathFilter(d.path, d),
+	}
 
 	for _, child := range d.describers {
 		pathFilters = append(pathFilters, child.PathFilters()...)
