@@ -1,6 +1,7 @@
 package cluster
 
 import (
+	"fmt"
 	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/dynamic"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
@@ -45,6 +46,19 @@ func (c *Cluster) DynamicClient() (dynamic.Interface, error) {
 // DiscoveryClient returns a DiscoveryClient for the cluster.
 func (c *Cluster) DiscoveryClient() (discovery.DiscoveryInterface, error) {
 	return discovery.NewDiscoveryClientForConfig(c.restClient)
+}
+
+// Version returns a ServerVersion for the cluster
+func (c *Cluster) Version() (string, error) {
+	dc, err := c.DiscoveryClient()
+	if err != nil {
+		return "", err
+	}
+	serverVersion, err := dc.ServerVersion()
+	if err != nil {
+		return "", err
+	}
+	return fmt.Sprint(serverVersion), nil
 }
 
 // NamespaceInterface is an interface for querying namespace details.
