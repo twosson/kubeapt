@@ -3,6 +3,7 @@ package cluster
 import (
 	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/dynamic"
+	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 )

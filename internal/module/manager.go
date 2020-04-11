@@ -1,6 +1,8 @@
 package module
 
 import (
+	"fmt"
+	"github.com/pkg/errors"
 	"github.com/twosson/kubeapt/internal/cluster"
 	"github.com/twosson/kubeapt/internal/overview"
 	"log"
@@ -36,7 +38,7 @@ func (m *Manager) Load() ([]Module, error) {
 
 	for _, module := range modules {
 		if err := module.Start(); err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, fmt.Sprintf("%s module failed to start", module.Name()))
 		}
 	}
 

@@ -1,7 +1,9 @@
 package overview
 
 import (
+	"fmt"
 	"github.com/davecgh/go-spew/spew"
+	"github.com/pkg/errors"
 	"github.com/twosson/kubeapt/internal/cluster"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -53,7 +55,7 @@ func (w *Watch) Start() (StopFunc, error) {
 
 		watcher, err := nri.Watch(metav1.ListOptions{})
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, fmt.Sprintf("did not create watcher for %s/%s/%s on %s namespace", resource.Group, resource.Version, resource.Resource, w.namespace))
 		}
 
 		watchers = append(watchers, watcher)
@@ -146,13 +148,15 @@ func (w *Watch) resources() ([]schema.GroupVersionResource, error) {
 }
 
 func hasList(res metav1.APIResource) bool {
+	hasList := false
+	hasWatch := false
+
 	for _, verb := range res.Verbs {
-		if verb == "list" {
-			return true
-		}
+		hasList = verb == "list"
+		hasWatch = verb == "watch"
 	}
 
-	return false
+	return hasList && hasWatch
 }
 
 func consumeEvents(done <-chan struct{}, watchers []watch.Interface) (chan watch.Event, chan struct{}) {
