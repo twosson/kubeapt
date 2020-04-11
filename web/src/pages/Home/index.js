@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import React from 'react'
 import Loading from 'components/Icons/Loading'
 import ContentSwitcher from './components/ContentSwitcher'
 import './styles.scss'
