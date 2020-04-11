@@ -1,7 +1,6 @@
 package module
 
 import (
-	"fmt"
 	"github.com/pkg/errors"
 	"github.com/twosson/kubeapt/internal/cluster"
 	"github.com/twosson/kubeapt/internal/overview"
