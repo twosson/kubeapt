@@ -84,7 +84,8 @@ func (c *ClusterOverview) SetNamespace(namespace string) error {
 	}
 
 	c.namespace = namespace
-	return c.Start()
+	go c.Start()
+	return nil
 }
 
 // Start starts overview.
