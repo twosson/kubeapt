@@ -11,7 +11,8 @@ func TestSectionDescriber(t *testing.T) {
 	namespace := "default"
 
 	d := NewSectionDescriber(
-		newStubDescriber(),
+		"/section",
+		newStubDescriber("/foo"),
 	)
 
 	cache := NewMemoryCache()
