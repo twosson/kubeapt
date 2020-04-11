@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/twosson/kubeapt/internal/api"
 	"github.com/twosson/kubeapt/internal/cluster/fake"
+	"github.com/twosson/kubeapt/internal/module"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -14,6 +15,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	modulefake "github.com/twosson/kubeapt/internal/module/fake"
 )
 
 func TestDash_Run(t *testing.T) {
@@ -58,8 +60,9 @@ func TestDash_Run(t *testing.T) {
 			nsClient := fake.NewNamespaceClient()
 
 			o := fake.NewSimpleClusterOverview()
+			manager := modulefake.NewStubManager("default", []module.Module{o})
 
-			d, err := newDash(listener, namespace, uiURL, nsClient, o)
+			d, err := newDash(listener, namespace, uiURL, nsClient, manager)
 			require.NoError(t, err)
 
 			d.willOpenBrowser = false
@@ -125,11 +128,12 @@ func TestDash_routes(t *testing.T) {
 			nsClient := fake.NewNamespaceClient()
 
 			o := fake.NewSimpleClusterOverview()
+			manager := modulefake.NewStubManager("default", []module.Module{o})
 
-			d, err := newDash(listener, namespace, uiURL, nsClient, o)
+			d, err := newDash(listener, namespace, uiURL, nsClient, manager)
 			require.NoError(t, err)
 
-			service := api.New(apiPathPrefix, nsClient)
+			service := api.New(apiPathPrefix, nsClient, manager)
 			d.apiHandler = service
 
 			d.defaultHandler = func() (handler http.Handler, err error) {

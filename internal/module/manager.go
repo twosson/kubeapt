@@ -9,7 +9,9 @@ import (
 
 // ManagerInterface is an interface for managing module lifecycle.
 type ManagerInterface interface {
-	Load() ([]Module, error)
+	Modules() []Module
+	SetNamespace(namespace string)
+	GetNamespace() string
 }
 
 // Manager manages module lifecycle.
@@ -22,28 +24,39 @@ type Manager struct {
 var _ ManagerInterface = (*Manager)(nil)
 
 // NewManager creates an instance of Manager.
-func NewManager(clusterClient cluster.ClientInterface, namespace string) *Manager {
-	return &Manager{
+func NewManager(clusterClient cluster.ClientInterface, namespace string) (*Manager, error) {
+	manager := &Manager{
 		clusterClient: clusterClient,
 		namespace:     namespace,
 	}
+
+	if err := manager.Load(); err != nil {
+		return nil, err
+	}
+
+	return manager, nil
 }
 
 // Load loads modules.
-func (m *Manager) Load() ([]Module, error) {
+func (m *Manager) Load() error {
 	modules := []Module{
 		overview.NewClusterOverview(m.clusterClient, m.namespace),
 	}
 
 	for _, module := range modules {
 		if err := module.Start(); err != nil {
-			return nil, errors.Wrapf(err, "%s module failed to start", module.Name())
+			return errors.Wrapf(err, "%s module failed to start", module.Name())
 		}
 	}
 
 	m.loadedModules = modules
 
-	return modules, nil
+	return nil
+}
+
+// Modules returns a list of modules.
+func (m *Manager) Modules() []Module {
+	return m.loadedModules
 }
 
 // Unload unloads modules.
@@ -55,9 +68,16 @@ func (m *Manager) Unload() {
 
 // SetNamespace sets the current namespace.
 func (m *Manager) SetNamespace(namespace string) {
+	m.namespace = namespace
+	log.Printf("Setting namespace to %s", namespace)
 	for _, module := range m.loadedModules {
 		if err := module.SetNamespace(namespace); err != nil {
 			log.Printf("ERROR: setting namespace for module %q: %v", module.Name(), err)
 		}
 	}
+}
+
+// GetNamespace gets the current namespace.
+func (m *Manager) GetNamespace() string {
+	return m.namespace
 }

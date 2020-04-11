@@ -5,7 +5,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/twosson/kubeapt/internal/cluster/fake"
+	"github.com/twosson/kubeapt/internal/module"
 	modulefake "github.com/twosson/kubeapt/internal/module/fake"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -16,44 +18,55 @@ import (
 func TestAPI_routes(t *testing.T) {
 	cases := []struct {
 		path            string
+		method          string
+		body            io.Reader
 		expectedCode    int
 		expectedContent string
 	}{
 		{
 			path:         "/namespaces",
+			method:       http.MethodGet,
 			expectedCode: http.StatusOK,
 		},
 		{
 			path:         "/navigation",
+			method:       http.MethodGet,
 			expectedCode: http.StatusOK,
 		},
 		{
 			path:         "/content/",
+			method:       http.MethodGet,
 			expectedCode: http.StatusNotFound,
 		},
 		{
 			path:            "/content/module/",
+			method:          http.MethodGet,
 			expectedCode:    http.StatusOK,
 			expectedContent: "root",
 		},
 		{
 			path:            "/content/module/nested",
+			method:          http.MethodGet,
 			expectedCode:    http.StatusOK,
 			expectedContent: "module",
 		},
 		{
 			path:         "/missing",
+			method:       http.MethodGet,
 			expectedCode: http.StatusNotFound,
 		},
 	}
 
 	for _, tc := range cases {
-		name := fmt.Sprintf("GET: %s", tc.path)
+		name := fmt.Sprintf("%s: %s", tc.method, tc.path)
 		t.Run(name, func(t *testing.T) {
-			nsClient := fake.NewNamespaceClient()
-			srv := New("/", nsClient)
-
 			m := modulefake.NewModule("module")
+
+			manager := modulefake.NewStubManager("default", []module.Module{m})
+
+			nsClient := fake.NewNamespaceClient()
+			srv := New("/", nsClient, manager)
+
 			err := srv.RegisterModule(m)
 			require.NoError(t, err)
 
@@ -65,8 +78,12 @@ func TestAPI_routes(t *testing.T) {
 
 			u.Path = tc.path
 
-			res, err := http.Get(u.String())
+			req, err := http.NewRequest(tc.method, u.String(), tc.body)
 			require.NoError(t, err)
+
+			res, err := http.DefaultClient.Do(req)
+			require.NoError(t, err)
+
 			defer res.Body.Close()
 
 			data, err := ioutil.ReadAll(res.Body)
@@ -78,5 +95,4 @@ func TestAPI_routes(t *testing.T) {
 			assert.Equal(t, tc.expectedCode, res.StatusCode)
 		})
 	}
-
 }

@@ -11,10 +11,6 @@ type navigationResponse struct {
 	Sections []*apt.Navigation `json:"sections,omitempty"`
 }
 
-type navigationsResponse struct {
-	Navigation []navigationResponse `json:"navigation,omitempty"`
-}
-
 type navigation struct {
 	sections []*apt.Navigation
 }

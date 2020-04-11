@@ -2,36 +2,55 @@ package api
 
 import (
 	"encoding/json"
-	"github.com/twosson/kubeapt/internal/cluster"
+	"github.com/twosson/kubeapt/internal/module"
 	"log"
 	"net/http"
 )
 
-type namespacesResponse struct {
-	Namespaces []string `json:"namespaces,omitempty"`
+type namespace struct {
+	moduleManager module.ManagerInterface
 }
 
-type namespaces struct {
-	nsClient cluster.NamespaceInterface
-}
-
-var _ http.Handler = (*namespaces)(nil)
-
-func newNamespaces(nsClient cluster.NamespaceInterface) *namespaces {
-	return &namespaces{
-		nsClient: nsClient,
+func newNamespace(moduleManager module.ManagerInterface) *namespace {
+	return &namespace{
+		moduleManager: moduleManager,
 	}
 }
 
-func (n *namespaces) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	names, err := n.nsClient.Names()
+type namespaceRequest struct {
+	Namespace string `json:"namespace,omitempty"`
+}
+
+func (n *namespace) update(w http.ResponseWriter, r *http.Request) {
+	var nr namespaceRequest
+
+	err := json.NewDecoder(r.Body).Decode(&nr)
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, err.Error())
+		respondWithError(w, http.StatusInternalServerError, "unable to decode request")
 		return
 	}
-	nr := &namespacesResponse{Namespaces: names}
+
+	if nr.Namespace == "" {
+		respondWithError(w, http.StatusBadRequest, "unable to decode request")
+		return
+	}
+
+	n.moduleManager.SetNamespace(nr.Namespace)
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+type namespaceResponse struct {
+	Namespace string `json:"namespace,omitempty"`
+}
+
+func (n *namespace) read(w http.ResponseWriter, r *http.Request) {
+	ns := n.moduleManager.GetNamespace()
+	nr := &namespaceResponse{
+		Namespace: ns,
+	}
 
 	if err := json.NewEncoder(w).Encode(nr); err != nil {
-		log.Printf("encoding namespaces error: %v", err)
+		log.Printf("encoding namespace error: %v", err)
 	}
 }
