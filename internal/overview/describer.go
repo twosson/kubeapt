@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/twosson/kubeapt/internal/cluster"
 	"github.com/twosson/kubeapt/internal/content"
+	"github.com/twosson/kubeapt/internal/view"
 	"reflect"
 
 	"github.com/pkg/errors"

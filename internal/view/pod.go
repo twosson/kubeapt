@@ -1,6 +1,7 @@
 package view
 
 import (
+	"context"
 	"github.com/pkg/errors"
 	"github.com/twosson/kubeapt/internal/cluster"
 	"github.com/twosson/kubeapt/internal/content"

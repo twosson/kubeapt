@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/twosson/kubeapt/internal/cluster"
 	"github.com/twosson/kubeapt/internal/content"
+	"github.com/twosson/kubeapt/internal/view"
 	metav1beta1 "k8s.io/apimachinery/pkg/apis/meta/v1beta1"
 	"net/url"
 	"path"
