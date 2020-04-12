@@ -1,8 +1,14 @@
 import React, { Component } from 'react'
-import { Route, Switch, withRouter } from 'react-router-dom'
+import { Switch, Route, withRouter } from 'react-router-dom'
 import Promise from 'promise'
 import _ from 'lodash'
-import { getNamespace, getNamespaces, getNavigation, setNamespace } from 'api'
+import {
+  getNavigation,
+  getNamespaces,
+  getNamespace,
+  setNamespace,
+  getContents
+} from 'api'
 import Home from 'pages/Home'
 import Header from '../Header'
 import Navigation from '../Navigation'
@@ -16,7 +22,6 @@ class App extends Component {
       navigation: [],
       namespaceOptions: [],
       contents: [],
-      title: '',
       namespaceOption: { label: 'default', value: 'default' }
     }
   }
@@ -41,14 +46,14 @@ class App extends Component {
       }))
     }
 
-    let { namespaceOption } = this.state
+    let { contents, namespaceOption } = this.state
     if (namespacePayload && namespaceOptions.length) {
       const option = _.find(namespaceOptions, {
         value: namespacePayload.namespace
       })
       if (option) {
         namespaceOption = option
-        await this.fetchContents(namespaceOption.value)
+        contents = await this.fetchContents(namespaceOption.value)
       }
     }
 
@@ -56,6 +61,7 @@ class App extends Component {
       navigation,
       namespaceOption,
       namespaceOptions,
+      contents
     })
   }
 
@@ -65,7 +71,7 @@ class App extends Component {
     } = this.props
 
     if (thisPath && lastPath !== thisPath) {
-      await this.fetchContents()
+      this.setState({ contents: await this.fetchContents() })
     }
   }
 
@@ -78,13 +84,8 @@ class App extends Component {
       location: { pathname }
     } = this.props
     const payload = await getContents(pathname, namespace)
-    if (payload) {
-      return this.setState({
-        contents: payload.contents,
-        title: payload.title,
-        loading: false
-      })
-    }
+    if (payload) return payload.contents
+    return []
   }
 
   onNamespaceChange = async (namespaceOption) => {
@@ -96,7 +97,10 @@ class App extends Component {
     // we render the correct contents
     const { namespaceOption: _namespaceOption } = this.state
     if (value === _namespaceOption.value) {
-      await this.fetchContents(value)
+      this.setState({
+        loading: false,
+        contents: await this.fetchContents(value)
+      })
     }
   }
 
@@ -106,8 +110,7 @@ class App extends Component {
       contents,
       navigation,
       namespaceOptions,
-      namespaceOption,
-      title
+      namespaceOption
     } = this.state
     return (
       <div className='app'>
@@ -126,12 +129,7 @@ class App extends Component {
               <Route
                 path='/content/overview'
                 render={props => (
-                  <Home
-                    {...props}
-                    contents={contents}
-                    loading={loading}
-                    title={title}
-                  />
+                  <Home {...props} contents={contents} loading={loading} />
                 )}
               />
             </Switch>

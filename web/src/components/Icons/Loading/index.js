@@ -1,9 +1,9 @@
 import React from 'react'
-import './styes.scss'
+import './styles.scss'
 
 export default function ({ className = 'loading' }) {
   return (
-    <Svg
+    <svg
       className={className}
       xmlns='http://www.w3.org/2000/svg'
       width='93'
@@ -19,6 +19,6 @@ export default function ({ className = 'loading' }) {
           transform='translate(3 3)'
         />
       </g>
-    </Svg>
+    </svg>
   )
 }

@@ -11,6 +11,7 @@ export default function Navigation ({
 }) {
   if (!navigation) return null
   const { sections = [] } = navigation
+  console.log(namespaceValue)
   return (
     <nav className='navigation--left'>
       <div className='navigation-namespace-selector'>
