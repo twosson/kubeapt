@@ -34,7 +34,7 @@ nfpm:
   vendor: "kubeapt.com"
   homepage: ""
   description: ""
-  license: "tbd"
+  license: "Kubeapt Proprietary"
   name_template: "{{.ProjectName}}_{{.Version}}_{{.Os}}-{{.Arch}}"
   replacements:
     darwin: macOS
