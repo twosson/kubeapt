@@ -251,7 +251,7 @@ var (
 var contentNotFound = errors.Errorf("content not found")
 
 type generator interface {
-	Generate(path, prefix, namespace string) (string, []content.Content, error)
+	Generate(path, prefix, namespace string) (ContentResponse, error)
 }
 
 type realGenerator struct {
@@ -270,7 +270,7 @@ func newGenerator(cache Cache, pathFilters []pathFilter, clusterClient cluster.C
 	}
 }
 
-func (g *realGenerator) Generate(path, prefix, namespace string) (string, []content.Content, error) {
+func (g *realGenerator) Generate(path, prefix, namespace string) (ContentResponse, error) {
 	g.mu.Lock()
 	defer g.mu.Unlock()
 
@@ -285,15 +285,15 @@ func (g *realGenerator) Generate(path, prefix, namespace string) (string, []cont
 			Fields: fields,
 		}
 
-		contents, title, err := pf.describer.Describe(prefix, namespace, g.clusterClient, options)
+		cResponse, err := pf.describer.Describe(prefix, namespace, g.clusterClient, options)
 		if err != nil {
-			return title, nil, err
+			return emptyContentResponse, err
 		}
 
-		return title, contents, nil
+		return cResponse, nil
 	}
 
-	return "", nil, contentNotFound
+	return emptyContentResponse, contentNotFound
 }
 
 func stubContent(name string) []content.Content {

@@ -73,7 +73,7 @@ func Test_realGenerator_Generate(t *testing.T) {
 
 			g := newGenerator(cache, pathFilters, clusterClient)
 
-			title, contents, err := g.Generate(tc.path, "/prefix", "default")
+			cResponse, err := g.Generate(tc.path, "/prefix", "default")
 			if tc.isErr {
 				require.Error(t, err)
 				return
@@ -81,8 +81,8 @@ func Test_realGenerator_Generate(t *testing.T) {
 
 			require.NoError(t, err)
 
-			assert.Equal(t, tc.expectedTitle, title)
-			assert.Equal(t, tc.expected, contents)
+			assert.Equal(t, tc.expectedTitle, cResponse.Title)
+			assert.Equal(t, tc.expected, cResponse.Contents)
 		})
 	}
 }
@@ -152,8 +152,11 @@ func newStubDescriber(p string) *stubDescriber {
 	}
 }
 
-func (d *stubDescriber) Describe(string, string, cluster.ClientInterface, DescriberOptions) ([]content.Content, string, error) {
-	return stubbedContent, "A title", nil
+func (d *stubDescriber) Describe(string, string, cluster.ClientInterface, DescriberOptions) (ContentResponse, error) {
+	return ContentResponse{
+		Contents: stubbedContent,
+		Title:    "A title",
+	}, nil
 }
 
 func (d *stubDescriber) PathFilters() []pathFilter {
