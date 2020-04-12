@@ -28,6 +28,7 @@ type DescriberOptions struct {
 type Describer interface {
 	Describe(prefix, namespace string, clusterClient cluster.ClientInterface, options DescriberOptions) ([]content.Content, error)
 	PathFilters() []pathFilter
+	Title() string
 }
 
 type baseDescriber struct{}
@@ -44,15 +45,21 @@ type ListDescriber struct {
 	*baseDescriber
 
 	path                string
+	title               string
 	listType            func() interface{}
 	objectType          func() interface{}
 	cacheKey            CacheKey
 	objectTransformFunc ObjecTransformFunc
 }
 
-func NewListDescriber(p string, cacheKey CacheKey, listType, objectType func() interface{}, otf ObjecTransformFunc) *ListDescriber {
+func (d *ListDescriber) Title() string {
+	return d.title
+}
+
+func NewListDescriber(p string, title string, cacheKey CacheKey, listType, objectType func() interface{}, otf ObjecTransformFunc) *ListDescriber {
 	return &ListDescriber{
 		path:                p,
+		title:               title,
 		baseDescriber:       newBaseDescriber(),
 		cacheKey:            cacheKey,
 		listType:            listType,
@@ -112,21 +119,27 @@ type ObjectDescriber struct {
 	*baseDescriber
 
 	path                string
+	title               string
 	objectType          func() interface{}
 	cacheKey            CacheKey
 	objectTransformFunc ObjecTransformFunc
 	views               []view.View
 }
 
-func NewObjectDescriber(p string, cacheKey CacheKey, objectType func() interface{}, otf ObjecTransformFunc, views []view.View) *ObjectDescriber {
+func NewObjectDescriber(p string, title string, cacheKey CacheKey, objectType func() interface{}, otf ObjecTransformFunc, views []view.View) *ObjectDescriber {
 	return &ObjectDescriber{
 		path:                p,
+		title:               title,
 		baseDescriber:       newBaseDescriber(),
 		cacheKey:            cacheKey,
 		objectType:          objectType,
 		objectTransformFunc: otf,
 		views:               views,
 	}
+}
+
+func (d *ObjectDescriber) Title() string {
+	return d.title
 }
 
 func (d *ObjectDescriber) Describe(prefix, namespace string, clusterClient cluster.ClientInterface, options DescriberOptions) ([]content.Content, error) {
@@ -261,13 +274,15 @@ func printContentTable(title, namespace, prefix string, tbl *metav1beta1.Table, 
 // SectionDescriber is a wrapper to combine content from multiple describers.
 type SectionDescriber struct {
 	path       string
+	title      string
 	describers []Describer
 }
 
 // NewSectionDescriber creates a SectionDescriber.
-func NewSectionDescriber(p string, describers ...Describer) *SectionDescriber {
+func NewSectionDescriber(p string, title string, describers ...Describer) *SectionDescriber {
 	return &SectionDescriber{
 		path:       p,
+		title:      title,
 		describers: describers,
 	}
 }
@@ -302,4 +317,8 @@ func (d *SectionDescriber) PathFilters() []pathFilter {
 	}
 
 	return pathFilters
+}
+
+func (d *SectionDescriber) Title() string {
+	return d.title
 }

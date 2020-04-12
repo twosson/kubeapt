@@ -6,4 +6,5 @@ import (
 
 type contentResponse struct {
 	Contents []content.Content `json:"contents,omitempty"`
+	Title    string            `json:"title,omitempty"`
 }
