@@ -2,9 +2,9 @@ package commands
 
 import (
 	"context"
+	"github.com/heptio/go-telemetry/pkg/telemetry"
 	"github.com/spf13/cobra"
 	"github.com/twosson/kubeapt/internal/dash"
-	"github.com/twosson/kubeapt/internal/telemetry/telemetry"
 	"log"
 	"os"
 	"os/signal"

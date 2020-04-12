@@ -3,10 +3,10 @@ package api
 import (
 	"encoding/json"
 	"github.com/gorilla/mux"
+	"github.com/heptio/go-telemetry/pkg/telemetry"
 	"github.com/twosson/kubeapt/internal/apt"
 	"github.com/twosson/kubeapt/internal/cluster"
 	"github.com/twosson/kubeapt/internal/module"
-	"github.com/twosson/kubeapt/internal/telemetry/telemetry"
 	"log"
 	"net/http"
 	"path"
