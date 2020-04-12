@@ -17,7 +17,7 @@ import (
 	printersinternal "k8s.io/kubernetes/pkg/printers/internalversion"
 )
 
-type ObjecTransformFunc func(namespace, prefix string, contents *[]content.Content) func(*metav1beta1.Table) error
+type ObjectTransformFunc func(namespace, prefix string, contents *[]content.Content) func(*metav1beta1.Table) error
 
 type DescriberOptions struct {
 	Cache  Cache
@@ -48,10 +48,10 @@ type ListDescriber struct {
 	listType            func() interface{}
 	objectType          func() interface{}
 	cacheKey            CacheKey
-	objectTransformFunc ObjecTransformFunc
+	objectTransformFunc ObjectTransformFunc
 }
 
-func NewListDescriber(p string, title string, cacheKey CacheKey, listType, objectType func() interface{}, otf ObjecTransformFunc) *ListDescriber {
+func NewListDescriber(p string, title string, cacheKey CacheKey, listType, objectType func() interface{}, otf ObjectTransformFunc) *ListDescriber {
 	return &ListDescriber{
 		path:                p,
 		title:               title,
@@ -116,11 +116,11 @@ type ObjectDescriber struct {
 	baseTitle           string
 	objectType          func() interface{}
 	cacheKey            CacheKey
-	objectTransformFunc ObjecTransformFunc
+	objectTransformFunc ObjectTransformFunc
 	views               []view.View
 }
 
-func NewObjectDescriber(p string, baseTitle string, cacheKey CacheKey, objectType func() interface{}, otf ObjecTransformFunc, views []view.View) *ObjectDescriber {
+func NewObjectDescriber(p string, baseTitle string, cacheKey CacheKey, objectType func() interface{}, otf ObjectTransformFunc, views []view.View) *ObjectDescriber {
 	return &ObjectDescriber{
 		path:                p,
 		baseTitle:           baseTitle,
