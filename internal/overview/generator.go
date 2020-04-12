@@ -128,14 +128,14 @@ var (
 	workloadsDescriber = NewSectionDescriber(
 		"/workloads",
 		"Workloads",
-		workloadsCronJobs.List(),
-		workloadsDaemonSets.List(),
-		workloadsDeployments.List(),
-		workloadsJobs.List(),
-		workloadsPods.List(),
-		workloadsReplicaSets.List(),
-		workloadsReplicationControllers.List(),
-		workloadsStatefulSets.List(),
+		workloadsCronJobs,
+		workloadsDaemonSets,
+		workloadsDeployments,
+		workloadsJobs,
+		workloadsPods,
+		workloadsReplicaSets,
+		workloadsReplicationControllers,
+		workloadsStatefulSets,
 	)
 
 	dlbIngresses = NewResource(ResourceOptions{
