@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/twosson/kubeapt/internal/cluster"
 	"github.com/twosson/kubeapt/internal/content"
-	"github.com/twosson/kubeapt/internal/view"
 	"k8s.io/api/extensions/v1beta1"
 	"regexp"
 	"sync"
