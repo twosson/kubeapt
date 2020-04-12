@@ -1,6 +1,7 @@
 package overview
 
 import (
+	"errors"
 	"fmt"
 	"github.com/davecgh/go-spew/spew"
 	"github.com/twosson/kubeapt/internal/apt"
@@ -8,11 +9,13 @@ import (
 	"github.com/twosson/kubeapt/internal/log"
 	"net/http"
 	"os"
+	"sync"
 )
 
 // ClusterOverview is an API for generating a cluster overview.
 type ClusterOverview struct {
 	client       cluster.ClientInterface
+	mu           sync.Mutex
 	namespace    string
 	logger       log.Logger
 	watchFactory func(namespace string, clusterClient cluster.ClientInterface, cache Cache) Watch
@@ -87,22 +90,26 @@ func (c *ClusterOverview) Navigation(root string) (*apt.Navigation, error) {
 
 // SetNamespace sets the current namespace.
 func (c *ClusterOverview) SetNamespace(namespace string) error {
-	c.logger.Debugf("setting namespace for overview to %q", namespace)
-	if c.stopFn != nil {
-		c.stopFn()
-	}
+	c.logger.With("namespace", namespace, "module", "overview").Debugf("stopping")
+	c.Stop()
 
+	c.logger.With("namespace", namespace, "module", "overview").Debugf("setting namespace")
 	c.namespace = namespace
 	return c.Start()
 }
 
 // Start starts overview.
 func (c *ClusterOverview) Start() error {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
 	if c.namespace == "" {
 		return nil
 	}
 
-	c.logger.Debugf("starting cluster overview")
+	if c.stopFn != nil {
+		return errors.New("synchronization error - residual state detected")
+	}
 
 	stopFn, err := c.watch(c.namespace)
 	if err != nil {
@@ -116,14 +123,20 @@ func (c *ClusterOverview) Start() error {
 
 // Stop stops overview.
 func (c *ClusterOverview) Stop() {
-	if c.stopFn != nil {
-		c.logger.Debugf("stopping cluster overview")
-		c.stopFn()
+	c.mu.Lock()
+	stopFn := c.stopFn
+	c.stopFn = nil
+	c.mu.Unlock()
+
+	if stopFn != nil {
+		go func() {
+			stopFn()
+		}()
 	}
 }
 
 func (c *ClusterOverview) watch(namespace string) (StopFunc, error) {
-	c.logger.Debugf("watching namespace %s", namespace)
+	c.logger.With("namespace", namespace, "module", "overview").Debugf("watching namespace")
 
 	watch := c.watchFactory(namespace, c.client, c.cache)
 	return watch.Start()

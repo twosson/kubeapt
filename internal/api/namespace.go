@@ -5,6 +5,7 @@ import (
 	"github.com/twosson/kubeapt/internal/log"
 	"github.com/twosson/kubeapt/internal/module"
 	"net/http"
+	"time"
 )
 
 type namespace struct {
@@ -37,7 +38,9 @@ func (n *namespace) update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	start := time.Now()
 	n.moduleManager.SetNamespace(nr.Namespace)
+	n.logger.Debugf("moduleManager.SetNamespace took %vms", int(time.Since(start)/time.Millisecond))
 
 	w.WriteHeader(http.StatusNoContent)
 }
