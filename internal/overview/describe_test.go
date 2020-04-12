@@ -4,7 +4,6 @@ import (
 	"context"
 	"github.com/twosson/kubeapt/internal/cluster/fake"
 	"github.com/twosson/kubeapt/internal/content"
-	"github.com/twosson/kubeapt/internal/view"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	metav1beta1 "k8s.io/apimachinery/pkg/apis/meta/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -76,25 +75,25 @@ func TestListDescriber(t *testing.T) {
 
 func TestObjectDescriber(t *testing.T) {
 	thePath := "/"
-	key := CacheKey{APIVersion: "v1", Kind: "kind"}
+	key := CacheKey{APIVersion: "v1", Kind: "Pod"}
 	namespace := "default"
 	fields := map[string]string{}
 
 	cache := newSpyCache()
 
 	object := map[string]interface{}{
-		"kind":       "kind",
+		"kind":       "Pod",
 		"apiVersion": "v1",
 		"metadata": map[string]interface{}{
 			"name": "name",
 		},
 	}
 
-	retrieveKey := CacheKey{Namespace: namespace, APIVersion: "v1", Kind: "kind"}
+	retrieveKey := CacheKey{Namespace: namespace, APIVersion: "v1", Kind: "Pod"}
 	cache.spyRetrieve(retrieveKey, []*unstructured.Unstructured{{Object: object}}, nil)
 
 	objectType := func() interface{} {
-		return &core.Event{}
+		return &core.Pod{}
 	}
 
 	theContent := newFakeContent(false)
@@ -106,7 +105,8 @@ func TestObjectDescriber(t *testing.T) {
 		}
 	}
 
-	d := NewObjectDescriber(thePath, "object", key, objectType, otf, []view.View{})
+	fn := DefaultLoader(key)
+	d := NewObjectDescriber(thePath, "object", fn, objectType, otf, []View{})
 
 	scheme := runtime.NewScheme()
 	objects := []runtime.Object{}

@@ -1,9 +1,8 @@
-package view
+package overview
 
 import (
 	"context"
 	"github.com/pkg/errors"
-	"github.com/twosson/kubeapt/internal/cluster"
 	"github.com/twosson/kubeapt/internal/content"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/kubernetes/pkg/apis/core"
@@ -16,7 +15,7 @@ func NewPodCondition() *PodCondition {
 	return &PodCondition{}
 }
 
-func (pc *PodCondition) Content(ctx context.Context, object runtime.Object, clusterClient cluster.ClientInterface) ([]content.Content, error) {
+func (pc *PodCondition) Content(ctx context.Context, object runtime.Object, c Cache) ([]content.Content, error) {
 	pod, err := retrievePod(object)
 	if err != nil {
 		return nil, err

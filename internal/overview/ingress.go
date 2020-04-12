@@ -1,10 +1,9 @@
-package view
+package overview
 
 import (
 	"context"
 	"fmt"
 	"github.com/pkg/errors"
-	"github.com/twosson/kubeapt/internal/cluster"
 	"github.com/twosson/kubeapt/internal/content"
 	"k8s.io/api/extensions/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -16,7 +15,11 @@ type IngressDetails struct {
 
 var _ View = (*IngressDetails)(nil)
 
-func (ing *IngressDetails) Content(ctx context.Context, object runtime.Object, clusterClient cluster.ClientInterface) ([]content.Content, error) {
+func NewIngressDetails() *IngressDetails {
+	return &IngressDetails{}
+}
+
+func (ing *IngressDetails) Content(ctx context.Context, object runtime.Object, c Cache) ([]content.Content, error) {
 	ingress, ok := object.(*v1beta1.Ingress)
 	if !ok {
 		return nil, errors.Errorf("expected object to be Ingress, it was %T", object)
