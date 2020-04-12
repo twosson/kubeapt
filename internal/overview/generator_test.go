@@ -1,6 +1,7 @@
 package overview
 
 import (
+	"context"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/twosson/kubeapt/internal/cluster"
@@ -73,7 +74,8 @@ func Test_realGenerator_Generate(t *testing.T) {
 
 			g := newGenerator(cache, pathFilters, clusterClient)
 
-			cResponse, err := g.Generate(tc.path, "/prefix", "default")
+			ctx := context.Background()
+			cResponse, err := g.Generate(ctx, tc.path, "/prefix", "default")
 			if tc.isErr {
 				require.Error(t, err)
 				return
@@ -152,7 +154,7 @@ func newStubDescriber(p string) *stubDescriber {
 	}
 }
 
-func (d *stubDescriber) Describe(string, string, cluster.ClientInterface, DescriberOptions) (ContentResponse, error) {
+func (d *stubDescriber) Describe(context.Context, string, string, cluster.ClientInterface, DescriberOptions) (ContentResponse, error) {
 	return ContentResponse{
 		Contents: stubbedContent,
 		Title:    "A title",

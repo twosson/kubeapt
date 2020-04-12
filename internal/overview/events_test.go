@@ -1,6 +1,7 @@
 package overview
 
 import (
+	"context"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/twosson/kubeapt/internal/cluster/fake"
@@ -28,8 +29,9 @@ func TestEventsDescriber(t *testing.T) {
 		Cache: cache,
 	}
 
+	ctx := context.Background()
 	d := NewEventsDescriber("/events")
-	cResponse, err := d.Describe("/prefix", namespace, clusterClient, options)
+	cResponse, err := d.Describe(ctx, "/prefix", namespace, clusterClient, options)
 	require.NoError(t, err)
 
 	require.Len(t, cResponse.Contents, 1)
