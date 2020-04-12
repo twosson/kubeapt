@@ -6,7 +6,6 @@ import (
 	"github.com/twosson/kubeapt/internal/content"
 	"github.com/twosson/kubeapt/internal/view"
 	metav1beta1 "k8s.io/apimachinery/pkg/apis/meta/v1beta1"
-	"net/url"
 	"path"
 	"reflect"
 )
@@ -14,15 +13,8 @@ import (
 func resourceLink(sectionType, resourceType string) lookupFunc {
 	return func(namespace, prefix string, cell interface{}) content.Text {
 		name := fmt.Sprintf("%v", cell)
-
-		values := url.Values{}
-		values.Set("namespace", namespace)
-
-		resourcePath := path.Join(prefix, sectionType, resourceType, name)
-
-		link := fmt.Sprintf("%s?%s", resourcePath, values.Encode())
-
-		return content.NewLinkText(name, link)
+		resourcePath := path.Join("/content", "overview", sectionType, resourceType, name)
+		return content.NewLinkText(name, resourcePath)
 	}
 }
 
