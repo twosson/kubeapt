@@ -6,6 +6,8 @@ import (
 	"github.com/twosson/kubeapt/internal/cluster"
 	"github.com/twosson/kubeapt/internal/content"
 	"github.com/twosson/kubeapt/internal/view"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -85,7 +87,7 @@ func (d *ListDescriber) Describe(ctx context.Context, prefix, namespace string, 
 			return emptyContentResponse, err
 		}
 
-		setItemName(item, object.GetName())
+		copyObjectMeta(item, object)
 
 		newSlice := reflect.Append(f, reflect.ValueOf(item).Elem())
 		f.Set(newSlice)
@@ -156,8 +158,9 @@ func (d *ObjectDescriber) Describe(ctx context.Context, prefix, namespace string
 		return emptyContentResponse, err
 	}
 
+	copyObjectMeta(item, object)
+
 	objectName := object.GetName()
-	setItemName(item, objectName)
 
 	var title string
 
@@ -213,6 +216,39 @@ func setItemName(item interface{}, name string) {
 	setNameIface := setNameVal.Interface()
 	setName := setNameIface.(func(string))
 	setName(name)
+}
+
+func copyObjectMeta(to interface{}, from *unstructured.Unstructured) error {
+	object, ok := to.(metav1.Object)
+	if !ok {
+		return errors.Errorf("%T is not an object", to)
+	}
+
+	typeMeta := metav1.TypeMeta{
+		Kind:       from.GetKind(),
+		APIVersion: from.GetAPIVersion(),
+	}
+
+	reflect.ValueOf(object).Elem().FieldByName("TypeMeta").Set(reflect.ValueOf(typeMeta))
+
+	object.SetNamespace(from.GetNamespace())
+	object.SetName(from.GetName())
+	object.SetGenerateName(from.GetGenerateName())
+	object.SetUID(from.GetUID())
+	object.SetResourceVersion(from.GetResourceVersion())
+	object.SetGeneration(from.GetGeneration())
+	object.SetSelfLink(from.GetSelfLink())
+	object.SetCreationTimestamp(from.GetCreationTimestamp())
+	object.SetDeletionTimestamp(from.GetDeletionTimestamp())
+	object.SetDeletionGracePeriodSeconds(from.GetDeletionGracePeriodSeconds())
+	object.SetLabels(from.GetLabels())
+	object.SetAnnotations(from.GetAnnotations())
+	object.SetInitializers(from.GetInitializers())
+	object.SetOwnerReferences(from.GetOwnerReferences())
+	object.SetClusterName(from.GetClusterName())
+	object.SetFinalizers(from.GetFinalizers())
+
+	return nil
 }
 
 func printObject(object runtime.Object, transformFunc func(*metav1beta1.Table) error) error {
