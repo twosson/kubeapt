@@ -1,11 +1,10 @@
 package fake
 
 import (
-	"errors"
 	"fmt"
+	"github.com/pkg/errors"
 	"github.com/twosson/kubeapt/internal/cluster"
 	"github.com/twosson/kubeapt/third_party/dynamicfake"
-	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -112,8 +111,7 @@ func NewSimpleDynamicClient(scheme *runtime.Scheme, discoveryClient discovery.Di
 
 		l, err := o.List(gvr, gvk, ns)
 		if err != nil {
-			fmt.Printf("Failed to list: %v\n", err)
-			return false, nil, err
+			return false, nil, errors.Wrap(err, "listing existing objects")
 		}
 
 		// Replay existing objects
@@ -124,13 +122,10 @@ func NewSimpleDynamicClient(scheme *runtime.Scheme, discoveryClient discovery.Di
 
 		ul, ok := l.(*unstructured.UnstructuredList)
 		if !ok {
-			fmt.Printf("wrong type for list: %T\n", l)
-			return false, nil, err
+			return false, nil, errors.Errorf("wrong type for list: %T\n", l)
 		}
-		accessor := meta.NewAccessor()
+
 		err = ul.EachListItem(func(obj runtime.Object) error {
-			name, _ := accessor.Name(obj)
-			fmt.Printf("obj: %v (%v)\n", name, obj.GetObjectKind().GroupVersionKind())
 			rfw.Add(obj)
 			return nil
 		})

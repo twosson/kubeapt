@@ -54,7 +54,7 @@ func TestWatch(t *testing.T) {
 
 	cache := NewMemoryCache(CacheNotificationOpt(notifyCh, notifyDone))
 
-	watch := NewWatch("default", clusterClient, cache, log.NopLogger())
+	watch := NewWatch("default", clusterClient, cache, log.TestLogger(t))
 
 	stopFn, err := watch.Start()
 	require.NoError(t, err)
@@ -67,7 +67,7 @@ func TestWatch(t *testing.T) {
 	// wait for cache to store initial items
 	select {
 	case <-time.After(2 * time.Second):
-		t.Fatal("timed out wating for initial object to notify")
+		t.Fatal("timed out waiting for initial object to notify")
 	case <-notifyCh:
 	}
 
@@ -188,7 +188,7 @@ func TestWatch_Stop(t *testing.T) {
 
 	cache := NewMemoryCache(CacheNotificationOpt(notifyCh, notifyDone))
 
-	watch := NewWatch("default", clusterClient, cache, log.NopLogger())
+	watch := NewWatch("default", clusterClient, cache, log.TestLogger(t))
 
 	stopFn, err := watch.Start()
 	require.NoError(t, err)
