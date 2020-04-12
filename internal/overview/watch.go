@@ -12,7 +12,7 @@ import (
 	"sync"
 )
 
-// StopFunc tells a wwatch to stop watching a namespace.
+// StopFunc tells a watch to stop watching a namespace.
 type StopFunc func()
 
 // Watch watches a objects in a namespace.
@@ -31,9 +31,9 @@ type ClusterWatch struct {
 // NewWatch creates an instance of Watch.
 func NewWatch(namespace string, clusterClient cluster.ClientInterface, c Cache, logger log.Logger) *ClusterWatch {
 	return &ClusterWatch{
+		namespace:     namespace,
 		clusterClient: clusterClient,
 		cache:         c,
-		namespace:     namespace,
 		logger:        logger,
 	}
 }
@@ -67,15 +67,35 @@ func (w *ClusterWatch) Start() (StopFunc, error) {
 
 	events, shutdownCh := consumeEvents(done, watchers)
 
+	allDone := make(chan interface{})
+	wg := sync.WaitGroup{}
+	wg.Add(2)
 	go func() {
+		// Forward events to handler.
+		// Exits after all watchers are stopped in consumeEvents.
 		for event := range events {
 			w.eventHandler(event)
 		}
+		wg.Done()
+	}()
+
+	go func() {
+		// Block until all watch consumers have finished (in consumeEvents)
+		<-shutdownCh
+		wg.Done()
+	}()
+
+	go func() {
+		// Block until fan-in consumer as well as individual watch consumers have completed
+		// (above two goroutines)
+		wg.Wait()
+		close(allDone)
 	}()
 
 	stopFn := func() {
+		// Signal consumer routines to shutdown. Block until all have finished.
 		done <- struct{}{}
-		<-shutdownCh
+		<-allDone
 	}
 
 	return stopFn, nil
@@ -113,6 +133,7 @@ func (w *ClusterWatch) resources() ([]schema.GroupVersionResource, error) {
 		return nil, err
 	}
 
+	// NOTE we may want ServerPreferredResources, but FakeDiscovery does not support it.
 	lists, err := discoveryClient.ServerResources()
 	if err != nil {
 		return nil, err
@@ -121,10 +142,6 @@ func (w *ClusterWatch) resources() ([]schema.GroupVersionResource, error) {
 	var gvrs []schema.GroupVersionResource
 
 	for _, list := range lists {
-		// todo kubernetes api-resource: the server does not allow this method on the requested resource
-		if list.GroupVersion == "metrics.k8s.io/v1beta1" {
-			continue
-		}
 		gv, err := schema.ParseGroupVersion(list.GroupVersion)
 		if err != nil {
 			return nil, err
@@ -135,6 +152,7 @@ func (w *ClusterWatch) resources() ([]schema.GroupVersionResource, error) {
 				continue
 			}
 			if isWatchable(res) {
+
 				gvr := schema.GroupVersionResource{
 					Group:    gv.Group,
 					Version:  gv.Version,
@@ -142,6 +160,7 @@ func (w *ClusterWatch) resources() ([]schema.GroupVersionResource, error) {
 				}
 
 				gvrs = append(gvrs, gvr)
+
 			}
 		}
 	}
@@ -159,19 +178,26 @@ func isWatchable(res metav1.APIResource) bool {
 	return m["list"] && m["watch"]
 }
 
+// consumeEvents performs fan-in of events from multiple watchers into a single event channel.
+// This continues until a message is sent on the provided done channel.
 func consumeEvents(done <-chan struct{}, watchers []watch.Interface) (chan watch.Event, chan struct{}) {
 	var wg sync.WaitGroup
+
 	wg.Add(len(watchers))
 
 	events := make(chan watch.Event)
 
-	shutdownComplate := make(chan struct{})
+	shutdownComplete := make(chan struct{})
 
 	for _, watcher := range watchers {
+		// Forward events from each watcher to events channel.
+		// Each drainer goroutine ends when its watcher's Stop() method is called,
+		// which will have the effect of closing its ResultChan and exiting the range loop.
 		go func(watcher watch.Interface) {
 			for event := range watcher.ResultChan() {
 				events <- event
 			}
+			wg.Done()
 		}(watcher)
 	}
 
@@ -181,17 +207,15 @@ func consumeEvents(done <-chan struct{}, watchers []watch.Interface) (chan watch
 		<-done
 		for _, watch := range watchers {
 			watch.Stop()
-			wg.Done()
 		}
-
-		shutdownComplate <- struct{}{}
 	}()
 
 	go func() {
 		// wait for all watchers to exit.
 		wg.Wait()
 		close(events)
+		shutdownComplete <- struct{}{}
 	}()
 
-	return events, shutdownComplate
+	return events, shutdownComplete
 }
