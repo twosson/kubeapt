@@ -6,6 +6,7 @@ import (
 	"github.com/twosson/kubeapt/internal/cluster"
 	"github.com/twosson/kubeapt/internal/content"
 	"github.com/twosson/kubeapt/internal/view"
+	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"reflect"
@@ -158,7 +159,9 @@ func (d *ObjectDescriber) Describe(ctx context.Context, prefix, namespace string
 		return emptyContentResponse, err
 	}
 
-	copyObjectMeta(item, object)
+	if err := copyObjectMeta(item, object); err != nil {
+		return emptyContentResponse, errors.Wrapf(err, "copying object metadata")
+	}
 
 	objectName := object.GetName()
 
@@ -224,12 +227,12 @@ func copyObjectMeta(to interface{}, from *unstructured.Unstructured) error {
 		return errors.Errorf("%T is not an object", to)
 	}
 
-	typeMeta := metav1.TypeMeta{
-		Kind:       from.GetKind(),
-		APIVersion: from.GetAPIVersion(),
+	t, err := meta.TypeAccessor(object)
+	if err != nil {
+		return errors.Wrapf(err, "accessing type meta")
 	}
-
-	reflect.ValueOf(object).Elem().FieldByName("TypeMeta").Set(reflect.ValueOf(typeMeta))
+	t.SetAPIVersion(from.GetAPIVersion())
+	t.SetKind(from.GetObjectKind().GroupVersionKind().Kind)
 
 	object.SetNamespace(from.GetNamespace())
 	object.SetName(from.GetName())
