@@ -4,19 +4,21 @@ import (
 	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/twosson/kubeapt/internal/apt"
-	"log"
+	"github.com/twosson/kubeapt/internal/log"
 	"net/http"
 )
 
 // Module is a fake module.
 type Module struct {
-	name string
+	name   string
+	logger log.Logger
 }
 
 // NewModule creates an instance of Module.
-func NewModule(name string) *Module {
+func NewModule(name string, logger log.Logger) *Module {
 	return &Module{
-		name: name,
+		name:   name,
+		logger: logger,
 	}
 }
 
@@ -43,7 +45,7 @@ func (m *Module) Handler(prefix string) http.Handler {
 	}))
 
 	router.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		log.Printf("fake module path not found: %s", r.URL.String())
+		m.logger.Errorf("fake module path not found: %s", r.URL.String())
 		w.WriteHeader(http.StatusNotFound)
 	})
 

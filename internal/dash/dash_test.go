@@ -6,6 +6,7 @@ import (
 	"github.com/heptio/go-telemetry/pkg/telemetry"
 	"github.com/twosson/kubeapt/internal/api"
 	"github.com/twosson/kubeapt/internal/cluster/fake"
+	"github.com/twosson/kubeapt/internal/log"
 	"github.com/twosson/kubeapt/internal/module"
 	"io/ioutil"
 	"net"
@@ -65,7 +66,7 @@ func TestDash_Run(t *testing.T) {
 			o := fake.NewSimpleClusterOverview()
 			manager := modulefake.NewStubManager("default", []module.Module{o})
 
-			d, err := newDash(listener, namespace, uiURL, nsClient, manager, telemetryClient)
+			d, err := newDash(listener, namespace, uiURL, nsClient, manager, log.NopLogger(), telemetryClient)
 			require.NoError(t, err)
 
 			d.willOpenBrowser = false
@@ -133,10 +134,10 @@ func TestDash_routes(t *testing.T) {
 			o := fake.NewSimpleClusterOverview()
 			manager := modulefake.NewStubManager("default", []module.Module{o})
 
-			d, err := newDash(listener, namespace, uiURL, nsClient, manager, telemetryClient)
+			d, err := newDash(listener, namespace, uiURL, nsClient, manager, log.NopLogger(), telemetryClient)
 			require.NoError(t, err)
 
-			service := api.New(apiPathPrefix, nsClient, manager, telemetryClient)
+			service := api.New(apiPathPrefix, nsClient, manager, log.NopLogger(), telemetryClient)
 			d.apiHandler = service
 
 			d.defaultHandler = func() (handler http.Handler, err error) {

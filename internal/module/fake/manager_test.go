@@ -2,12 +2,13 @@ package fake
 
 import (
 	"github.com/stretchr/testify/assert"
+	"github.com/twosson/kubeapt/internal/log"
 	"github.com/twosson/kubeapt/internal/module"
 	"testing"
 )
 
 func TestStubManager(t *testing.T) {
-	m := NewModule("module")
+	m := NewModule("module", log.NopLogger())
 
 	sm := NewStubManager("default", []module.Module{m})
 

@@ -2,18 +2,20 @@ package api
 
 import (
 	"encoding/json"
+	"github.com/twosson/kubeapt/internal/log"
 	"github.com/twosson/kubeapt/internal/module"
-	"log"
 	"net/http"
 )
 
 type namespace struct {
 	moduleManager module.ManagerInterface
+	logger        log.Logger
 }
 
-func newNamespace(moduleManager module.ManagerInterface) *namespace {
+func newNamespace(moduleManager module.ManagerInterface, logger log.Logger) *namespace {
 	return &namespace{
 		moduleManager: moduleManager,
+		logger:        logger,
 	}
 }
 
@@ -51,6 +53,6 @@ func (n *namespace) read(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := json.NewEncoder(w).Encode(nr); err != nil {
-		log.Printf("encoding namespace error: %v", err)
+		n.logger.Errorf("encoding namespace error: %v", err)
 	}
 }

@@ -6,6 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/twosson/kubeapt/internal/cluster/fake"
+	"github.com/twosson/kubeapt/internal/log"
 	"github.com/twosson/kubeapt/internal/module"
 	modulefake "github.com/twosson/kubeapt/internal/module/fake"
 	"io"
@@ -63,12 +64,12 @@ func TestAPI_routes(t *testing.T) {
 	for _, tc := range cases {
 		name := fmt.Sprintf("%s: %s", tc.method, tc.path)
 		t.Run(name, func(t *testing.T) {
-			m := modulefake.NewModule("module")
+			m := modulefake.NewModule("module", log.NopLogger())
 
 			manager := modulefake.NewStubManager("default", []module.Module{m})
 
 			nsClient := fake.NewNamespaceClient()
-			srv := New("/", nsClient, manager, telemetryClient)
+			srv := New("/", nsClient, manager, log.NopLogger(), telemetryClient)
 
 			err := srv.RegisterModule(m)
 			require.NoError(t, err)

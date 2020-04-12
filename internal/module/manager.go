@@ -3,8 +3,8 @@ package module
 import (
 	"github.com/pkg/errors"
 	"github.com/twosson/kubeapt/internal/cluster"
+	"github.com/twosson/kubeapt/internal/log"
 	"github.com/twosson/kubeapt/internal/overview"
-	"log"
 )
 
 // ManagerInterface is an interface for managing module lifecycle.
@@ -18,16 +18,18 @@ type ManagerInterface interface {
 type Manager struct {
 	clusterClient cluster.ClientInterface
 	namespace     string
+	logger        log.Logger
 	loadedModules []Module
 }
 
 var _ ManagerInterface = (*Manager)(nil)
 
 // NewManager creates an instance of Manager.
-func NewManager(clusterClient cluster.ClientInterface, namespace string) (*Manager, error) {
+func NewManager(clusterClient cluster.ClientInterface, namespace string, logger log.Logger) (*Manager, error) {
 	manager := &Manager{
 		clusterClient: clusterClient,
 		namespace:     namespace,
+		logger:        logger,
 	}
 
 	if err := manager.Load(); err != nil {
@@ -40,7 +42,7 @@ func NewManager(clusterClient cluster.ClientInterface, namespace string) (*Manag
 // Load loads modules.
 func (m *Manager) Load() error {
 	modules := []Module{
-		overview.NewClusterOverview(m.clusterClient, m.namespace),
+		overview.NewClusterOverview(m.clusterClient, m.namespace, m.logger),
 	}
 
 	for _, module := range modules {
@@ -69,10 +71,10 @@ func (m *Manager) Unload() {
 // SetNamespace sets the current namespace.
 func (m *Manager) SetNamespace(namespace string) {
 	m.namespace = namespace
-	log.Printf("Setting namespace to %s", namespace)
+	m.logger.Debugf("setting namespace to %s", namespace)
 	for _, module := range m.loadedModules {
 		if err := module.SetNamespace(namespace); err != nil {
-			log.Printf("ERROR: setting namespace for module %q: %v", module.Name(), err)
+			m.logger.Errorf("setting namespace for module %q: %v", module.Name(), err)
 		}
 	}
 }

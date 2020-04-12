@@ -2,8 +2,8 @@ package overview
 
 import (
 	"github.com/gorilla/mux"
+	"github.com/twosson/kubeapt/internal/log"
 	"k8s.io/apimachinery/pkg/util/json"
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -19,7 +19,7 @@ type errorResponse struct {
 	Error errorMessage `json:"error,omitempty"`
 }
 
-func respondWithError(w http.ResponseWriter, code int, message string) {
+func respondWithError(w http.ResponseWriter, code int, message string, logger log.Logger) {
 	r := &errorResponse{
 		Error: errorMessage{
 			Code:    code,
@@ -32,7 +32,7 @@ func respondWithError(w http.ResponseWriter, code int, message string) {
 	w.WriteHeader(code)
 
 	if err := json.NewEncoder(w).Encode(r); err != nil {
-		log.Printf("encoding response error: %v", err)
+		logger.Errorf("encoding response error: %v", err)
 	}
 }
 
@@ -44,7 +44,7 @@ type handler struct {
 
 var _ http.Handler = (*handler)(nil)
 
-func newHandler(prefix string, g generator, sfn streamFn) *handler {
+func newHandler(prefix string, g generator, sfn streamFn, logger log.Logger) *handler {
 	router := mux.NewRouter().StrictSlash(true)
 
 	router.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -70,6 +70,7 @@ func newHandler(prefix string, g generator, sfn streamFn) *handler {
 				namespace:    namespace,
 				streamFn:     stream,
 				eventTimeout: eventTimeout,
+				logger:       logger,
 			}
 
 			cs.content(r.Context())
@@ -80,9 +81,9 @@ func newHandler(prefix string, g generator, sfn streamFn) *handler {
 		if err != nil {
 			switch {
 			case err == contentNotFound:
-				respondWithError(w, http.StatusNotFound, err.Error())
+				respondWithError(w, http.StatusNotFound, err.Error(), logger)
 			default:
-				respondWithError(w, http.StatusInternalServerError, err.Error())
+				respondWithError(w, http.StatusInternalServerError, err.Error(), logger)
 			}
 			return
 		}
@@ -93,7 +94,7 @@ func newHandler(prefix string, g generator, sfn streamFn) *handler {
 		}
 
 		if err := json.NewEncoder(w).Encode(cr); err != nil {
-			log.Printf("encoding response: %v", err)
+			logger.Errorf("encoding response: %v", err)
 		}
 	})
 

@@ -4,6 +4,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/twosson/kubeapt/internal/cluster/fake"
+	"github.com/twosson/kubeapt/internal/log"
 	"k8s.io/apimachinery/pkg/runtime"
 	"testing"
 )
@@ -17,7 +18,7 @@ func TestClusterOverview(t *testing.T) {
 	clusterClient, err := fake.NewClient(scheme, objects)
 	require.NoError(t, err)
 
-	o := NewClusterOverview(clusterClient, "default")
+	o := NewClusterOverview(clusterClient, "default", log.NopLogger())
 
 	namespaces, err := o.Namespaces()
 	require.NoError(t, err)
@@ -36,7 +37,7 @@ func TestClusterOverview_SetNamespace(t *testing.T) {
 	clusterClient, err := fake.NewClient(scheme, objects)
 	require.NoError(t, err)
 
-	o := NewClusterOverview(clusterClient, "default")
+	o := NewClusterOverview(clusterClient, "default", log.NopLogger())
 	defer o.Stop()
 
 	err = o.SetNamespace("ns2")

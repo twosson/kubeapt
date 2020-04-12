@@ -5,6 +5,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/twosson/kubeapt/internal/apt"
+	"github.com/twosson/kubeapt/internal/log"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -13,12 +14,12 @@ import (
 )
 
 func TestModule_ContentPath(t *testing.T) {
-	m := NewModule("module")
+	m := NewModule("module", log.NopLogger())
 	assert.Equal(t, "/module", m.ContentPath())
 }
 
 func TestModule_Handler(t *testing.T) {
-	m := NewModule("module")
+	m := NewModule("module", log.NopLogger())
 
 	ts := httptest.NewServer(m.Handler("/module"))
 	defer ts.Close()
@@ -69,7 +70,7 @@ func TestModule_Handler(t *testing.T) {
 }
 
 func TestModule_Navigation(t *testing.T) {
-	m := NewModule("module")
+	m := NewModule("module", log.NopLogger())
 
 	expected := &apt.Navigation{
 		Path:  "/module",

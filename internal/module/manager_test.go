@@ -3,6 +3,7 @@ package module
 import (
 	"github.com/stretchr/testify/require"
 	"github.com/twosson/kubeapt/internal/cluster/fake"
+	"github.com/twosson/kubeapt/internal/log"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"testing"
@@ -17,7 +18,7 @@ func TestManager(t *testing.T) {
 	clusterClient, err := fake.NewClient(scheme, objects)
 	require.NoError(t, err)
 
-	manager, err := NewManager(clusterClient, "default")
+	manager, err := NewManager(clusterClient, "default", log.NopLogger())
 	require.NoError(t, err)
 
 	modules := manager.Modules()

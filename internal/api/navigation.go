@@ -3,7 +3,7 @@ package api
 import (
 	"encoding/json"
 	"github.com/twosson/kubeapt/internal/apt"
-	"log"
+	"github.com/twosson/kubeapt/internal/log"
 	"net/http"
 )
 
@@ -13,13 +13,15 @@ type navigationResponse struct {
 
 type navigation struct {
 	sections []*apt.Navigation
+	logger   log.Logger
 }
 
 var _ http.Handler = (*navigation)(nil)
 
-func newNavigation(sections []*apt.Navigation) *navigation {
+func newNavigation(sections []*apt.Navigation, logger log.Logger) *navigation {
 	return &navigation{
 		sections: sections,
+		logger:   logger,
 	}
 }
 
@@ -29,6 +31,6 @@ func (n *navigation) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := json.NewEncoder(w).Encode(nr); err != nil {
-		log.Printf("encoding navigation error: %v", err)
+		n.logger.Errorf("encoding navigation error: %v", err)
 	}
 }

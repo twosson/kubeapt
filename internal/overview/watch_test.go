@@ -3,6 +3,7 @@ package overview
 import (
 	"github.com/stretchr/testify/require"
 	"github.com/twosson/kubeapt/internal/cluster/fake"
+	"github.com/twosson/kubeapt/internal/log"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -45,7 +46,7 @@ func TestWatch(t *testing.T) {
 
 	cache := NewMemoryCache(CacheNotificationOpt(notifyCh))
 
-	watch := NewWatch("default", clusterClient, cache)
+	watch := NewWatch("default", clusterClient, cache, log.NopLogger())
 
 	stopFn, err := watch.Start()
 	require.NoError(t, err)

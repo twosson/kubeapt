@@ -6,6 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/twosson/kubeapt/internal/content"
+	"github.com/twosson/kubeapt/internal/log"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -52,7 +53,7 @@ func Test_handler_routes(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			h := newHandler("/api", tc.generator, stubStream)
+			h := newHandler("/api", tc.generator, stubStream, log.NopLogger())
 
 			ts := httptest.NewServer(h)
 			defer ts.Close()
