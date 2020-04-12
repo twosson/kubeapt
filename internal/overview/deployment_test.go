@@ -6,6 +6,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/twosson/kubeapt/internal/content"
 	"io/ioutil"
+	batchv1beta1 "k8s.io/api/batch/v1beta1"
 	extensionsv1beta1 "k8s.io/api/extensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -13,6 +14,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/kubernetes/scheme"
+	"k8s.io/kubernetes/pkg/apis/batch"
 	"k8s.io/kubernetes/pkg/apis/core"
 	"k8s.io/kubernetes/pkg/apis/extensions"
 	"path/filepath"
@@ -201,7 +203,7 @@ func TestDeploymentReplicaSets(t *testing.T) {
 			"Desired":    content.NewStringText("3"),
 			"Current":    content.NewStringText("3"),
 			"Ready":      content.NewStringText("3"),
-			"Age":        content.NewStringText("2d"),
+			"Age":        content.NewStringText("3d"),
 			"Containers": content.NewStringText("nginx"),
 			"Images":     content.NewStringText("nginx:1.13.6"),
 			"Selector":   content.NewStringText("app=myapp,pod-template-hash=2350241137"),
@@ -245,8 +247,12 @@ func convertToInternal(t *testing.T, in runtime.Object) runtime.Object {
 	var out runtime.Object
 
 	switch in.(type) {
+	case *batchv1beta1.CronJob:
+		out = &batch.CronJob{}
 	case *extensionsv1beta1.ReplicaSet:
 		out = &extensions.ReplicaSet{}
+	default:
+		t.Fatalf("don't know how to convert %T to internal", in)
 	}
 
 	err := scheme.Scheme.Convert(in, out, runtime.InternalGroupVersioner)

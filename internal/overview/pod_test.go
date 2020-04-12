@@ -6,7 +6,6 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/twosson/kubeapt/internal/content"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/kubernetes/pkg/apis/apps"
 	"k8s.io/kubernetes/pkg/apis/batch"
@@ -17,11 +16,7 @@ import (
 )
 
 func TestPodList_InvalidObject(t *testing.T) {
-	pl := NewPodList()
-	ctx := context.Background()
-
-	_, err := pl.Content(ctx, nil, nil)
-	require.Error(t, err)
+	assertViewInvalidObject(t, NewPodList())
 }
 
 func TestPodList(t *testing.T) {
@@ -59,7 +54,7 @@ func TestPodList(t *testing.T) {
 			"Ready":          content.NewStringText("1/1"),
 			"Status":         content.NewStringText("Running"),
 			"Restarts":       content.NewStringText("0"),
-			"Age":            content.NewStringText("2d"),
+			"Age":            content.NewStringText("3d"),
 			"IP":             content.NewStringText("10.1.114.100"),
 			"Node":           content.NewStringText("node1"),
 			"Nominated Node": content.NewStringText("<none>"),
@@ -75,13 +70,7 @@ func TestPodList(t *testing.T) {
 }
 
 func TestPodCondition_InvalidObject(t *testing.T) {
-	pc := NewPodCondition()
-	ctx := context.Background()
-
-	object := &unstructured.Unstructured{}
-
-	_, err := pc.Content(ctx, object, nil)
-	require.Error(t, err)
+	assertViewInvalidObject(t, NewPodCondition())
 }
 
 func TestPodCondition(t *testing.T) {

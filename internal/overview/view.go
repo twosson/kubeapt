@@ -3,6 +3,8 @@ package overview
 import (
 	"context"
 	"github.com/twosson/kubeapt/internal/content"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"time"
 
 	"k8s.io/apimachinery/pkg/runtime"
 )
@@ -17,6 +19,23 @@ func tableCol(name string) content.TableColumn {
 		Name:     name,
 		Accessor: name,
 	}
+}
+
+func tableCols(names ...string) []content.TableColumn {
+	columns := []content.TableColumn{}
+	for _, name := range names {
+		columns = append(columns, content.TableColumn{Name: name, Accessor: name})
+	}
+
+	return columns
+}
+
+func formatTime(t *metav1.Time) string {
+	if t == nil {
+		return "-"
+	}
+
+	return t.UTC().Format(time.RFC1123Z)
 }
 
 // LookupFunc is a function for looking up the contents of a cell.
