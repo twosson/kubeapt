@@ -37,7 +37,7 @@ func NewClusterOverview(client cluster.ClientInterface, namespace string, logger
 			}
 		}()
 
-		opts = append(opts, CacheNotificationOpt(ch))
+		opts = append(opts, CacheNotificationOpt(ch, nil))
 	}
 
 	cache := NewMemoryCache(opts...)
