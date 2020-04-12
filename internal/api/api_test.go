@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"github.com/heptio/go-telemetry/pkg/telemetry"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/twosson/kubeapt/internal/cluster/fake"
@@ -14,6 +15,8 @@ import (
 	"net/url"
 	"testing"
 )
+
+var telemetryClient = &telemetry.NilClient{}
 
 func TestAPI_routes(t *testing.T) {
 	cases := []struct {
@@ -65,7 +68,7 @@ func TestAPI_routes(t *testing.T) {
 			manager := modulefake.NewStubManager("default", []module.Module{m})
 
 			nsClient := fake.NewNamespaceClient()
-			srv := New("/", nsClient, manager)
+			srv := New("/", nsClient, manager, telemetryClient)
 
 			err := srv.RegisterModule(m)
 			require.NoError(t, err)

@@ -3,6 +3,7 @@ package dash
 import (
 	"context"
 	"fmt"
+	"github.com/heptio/go-telemetry/pkg/telemetry"
 	"github.com/twosson/kubeapt/internal/api"
 	"github.com/twosson/kubeapt/internal/cluster/fake"
 	"github.com/twosson/kubeapt/internal/module"
@@ -17,6 +18,8 @@ import (
 	"github.com/stretchr/testify/require"
 	modulefake "github.com/twosson/kubeapt/internal/module/fake"
 )
+
+var telemetryClient = &telemetry.NilClient{}
 
 func TestDash_Run(t *testing.T) {
 	cases := []struct {
@@ -62,7 +65,7 @@ func TestDash_Run(t *testing.T) {
 			o := fake.NewSimpleClusterOverview()
 			manager := modulefake.NewStubManager("default", []module.Module{o})
 
-			d, err := newDash(listener, namespace, uiURL, nsClient, manager)
+			d, err := newDash(listener, namespace, uiURL, nsClient, manager, telemetryClient)
 			require.NoError(t, err)
 
 			d.willOpenBrowser = false
@@ -130,10 +133,10 @@ func TestDash_routes(t *testing.T) {
 			o := fake.NewSimpleClusterOverview()
 			manager := modulefake.NewStubManager("default", []module.Module{o})
 
-			d, err := newDash(listener, namespace, uiURL, nsClient, manager)
+			d, err := newDash(listener, namespace, uiURL, nsClient, manager, telemetryClient)
 			require.NoError(t, err)
 
-			service := api.New(apiPathPrefix, nsClient, manager)
+			service := api.New(apiPathPrefix, nsClient, manager, telemetryClient)
 			d.apiHandler = service
 
 			d.defaultHandler = func() (handler http.Handler, err error) {
