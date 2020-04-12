@@ -16,6 +16,7 @@ class App extends Component {
       navigation: [],
       namespaceOptions: [],
       contents: [],
+      title: '',
       namespaceOption: { label: 'default', value: 'default' }
     }
   }
@@ -40,14 +41,14 @@ class App extends Component {
       }))
     }
 
-    let { contents, namespaceOption } = this.state
+    let { namespaceOption } = this.state
     if (namespacePayload && namespaceOptions.length) {
       const option = _.find(namespaceOptions, {
         value: namespacePayload.namespace
       })
       if (option) {
         namespaceOption = option
-        contents = await this.fetchContents(namespaceOption.value)
+        await this.fetchContents(namespaceOption.value)
       }
     }
 
@@ -55,7 +56,6 @@ class App extends Component {
       navigation,
       namespaceOption,
       namespaceOptions,
-      contents
     })
   }
 
@@ -65,7 +65,7 @@ class App extends Component {
     } = this.props
 
     if (thisPath && lastPath !== thisPath) {
-      this.setState({ contents: await this.fetchContents() })
+      await this.fetchContents()
     }
   }
 
@@ -78,8 +78,13 @@ class App extends Component {
       location: { pathname }
     } = this.props
     const payload = await getContents(pathname, namespace)
-    if (payload) return payload.contents
-    return []
+    if (payload) {
+      return this.setState({
+        contents: payload.contents,
+        title: payload.title,
+        loading: false
+      })
+    }
   }
 
   onNamespaceChange = async (namespaceOption) => {
@@ -91,10 +96,7 @@ class App extends Component {
     // we render the correct contents
     const { namespaceOption: _namespaceOption } = this.state
     if (value === _namespaceOption.value) {
-      this.setState({
-        loading: false,
-        contents: await this.fetchContents(value)
-      })
+      await this.fetchContents(value)
     }
   }
 
@@ -104,7 +106,8 @@ class App extends Component {
       contents,
       navigation,
       namespaceOptions,
-      namespaceOption
+      namespaceOption,
+      title
     } = this.state
     return (
       <div className='app'>
@@ -123,7 +126,12 @@ class App extends Component {
               <Route
                 path='/content/overview'
                 render={props => (
-                  <Home {...props} contents={contents} loading={loading} />
+                  <Home
+                    {...props}
+                    contents={contents}
+                    loading={loading}
+                    title={title}
+                  />
                 )}
               />
             </Switch>
