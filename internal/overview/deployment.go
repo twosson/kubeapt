@@ -2,7 +2,6 @@ package overview
 
 import (
 	"context"
-	"fmt"
 	"github.com/pkg/errors"
 	"github.com/twosson/kubeapt/internal/content"
 	apiequality "k8s.io/apimachinery/pkg/api/equality"
@@ -14,7 +13,6 @@ import (
 	"log"
 	"reflect"
 	"sort"
-	"time"
 )
 
 type DeploymentSummary struct{}
@@ -85,8 +83,8 @@ func (drs *DeploymentReplicaSets) replicaSets(deployment *extensions.Deployment,
 
 	err = printContentObject(
 		"New Replica Set",
-		"ns",
-		"prefix",
+		"",
+		"",
 		replicaSetTransforms,
 		newReplicaSet,
 		&contents,
@@ -102,8 +100,8 @@ func (drs *DeploymentReplicaSets) replicaSets(deployment *extensions.Deployment,
 
 	err = printContentObject(
 		"Old Replica Sets",
-		"ns",
-		"prefix",
+		"",
+		"",
 		replicaSetTransforms,
 		oldList,
 		&contents,
@@ -184,12 +182,23 @@ func loadReplicaSets(key CacheKey, c Cache, selector *metav1.LabelSelector) ([]*
 	return list, nil
 }
 
+// extraKeys are keys that should be ignored in labels. These keys are added
+// by tools or by Kubernetes itself.
+var extraKeys = []string{
+	"statefulset.kubernetes.io/pod-name",
+	extensions.DefaultDeploymentUniqueLabelKey,
+	"controller-revision-hash",
+	"pod-template-generation",
+}
+
 func isEqualSelector(s1, s2 *metav1.LabelSelector) bool {
 	s1Copy := s1.DeepCopy()
 	s2Copy := s2.DeepCopy()
 
-	delete(s1Copy.MatchLabels, extensions.DefaultDeploymentUniqueLabelKey)
-	delete(s2Copy.MatchLabels, extensions.DefaultDeploymentUniqueLabelKey)
+	for _, key := range extraKeys {
+		delete(s1Copy.MatchLabels, key)
+		delete(s2Copy.MatchLabels, key)
+	}
 
 	return apiequality.Semantic.DeepEqual(s1Copy, s2Copy)
 }
@@ -197,9 +206,11 @@ func isEqualSelector(s1, s2 *metav1.LabelSelector) bool {
 func equalIgnoreHash(template1, template2 *core.PodTemplateSpec) bool {
 	t1Copy := template1.DeepCopy()
 	t2Copy := template2.DeepCopy()
-	// Remove hash labels from template.Labels before comparing
-	delete(t1Copy.Labels, extensions.DefaultDeploymentUniqueLabelKey)
-	delete(t2Copy.Labels, extensions.DefaultDeploymentUniqueLabelKey)
+
+	for _, key := range extraKeys {
+		delete(t1Copy.Labels, key)
+		delete(t2Copy.Labels, key)
+	}
 
 	return apiequality.Semantic.DeepEqual(*t1Copy, *t2Copy)
 }
@@ -247,49 +258,4 @@ func (o replicaSetsByCreationTimestamp) Less(i, j int) bool {
 		return o[i].Name < o[j].Name
 	}
 	return o[i].CreationTimestamp.Before(&o[j].CreationTimestamp)
-}
-
-func printDeploymentSummary(deployment *extensions.Deployment) (content.Section, error) {
-	minReadySeconds := fmt.Sprintf("%d", deployment.Spec.MinReadySeconds)
-
-	var revisionHistoryLimit string
-	if rhl := deployment.Spec.RevisionHistoryLimit; rhl != nil {
-		revisionHistoryLimit = fmt.Sprintf("%d", *rhl)
-	}
-
-	var rollingUpdateStrategy string
-	if rus := deployment.Spec.Strategy.RollingUpdate; rus != nil {
-		rollingUpdateStrategy = fmt.Sprintf("Max Surge: %s, Max unavailable: %s",
-			rus.MaxSurge.String(), rus.MaxUnavailable.String())
-	}
-
-	status := fmt.Sprintf("%d updated, %d total, %d available, %d unavailable",
-		deployment.Status.UpdatedReplicas,
-		deployment.Status.Replicas,
-		deployment.Status.AvailableReplicas,
-		deployment.Status.UnavailableReplicas,
-	)
-
-	selector, err := metav1.LabelSelectorAsSelector(deployment.Spec.Selector)
-	if err != nil {
-		return content.Section{}, err
-	}
-
-	section := content.Section{
-		Items: []content.Item{
-			content.TextItem("Name", deployment.GetName()),
-			content.TextItem("Namespace", deployment.GetNamespace()),
-			content.LabelsItem("Labels", deployment.GetLabels()),
-			content.ListItem("Annotations", deployment.GetAnnotations()),
-			content.TextItem("Creation Time", deployment.CreationTimestamp.Time.UTC().Format(time.RFC1123Z)),
-			content.TextItem("Selector", selector.String()),
-			content.TextItem("Strategy", string(deployment.Spec.Strategy.Type)),
-			content.TextItem("Min Ready Seconds", minReadySeconds),
-			content.TextItem("Revision History Limit", revisionHistoryLimit),
-			content.TextItem("Rolling Update Strategy", rollingUpdateStrategy),
-			content.TextItem("Status", status),
-		},
-	}
-
-	return section, nil
 }
