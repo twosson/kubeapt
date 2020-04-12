@@ -202,8 +202,8 @@ var (
 		"/config-and-storage",
 		"Config and Storage",
 		csConfigMaps,
-		csPVCs,
-		csSecrets,
+		csPVCs.List(),
+		csSecrets.List(),
 	)
 
 	customResourcesDescriber = NewSectionDescriber(
