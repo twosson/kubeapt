@@ -10,7 +10,6 @@ import (
 	"k8s.io/kubernetes/pkg/apis/core"
 	"k8s.io/kubernetes/pkg/apis/extensions"
 	"k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/scheme"
-	"log"
 	"reflect"
 	"sort"
 )
@@ -65,14 +64,12 @@ func (drs *DeploymentReplicaSets) Content(ctx context.Context, object runtime.Ob
 
 	deployment, err := retrieveDeployment(object)
 	if err != nil {
-		log.Printf("wtf: %v", err)
-		return nil, err
+		return nil, errors.Wrap(err, "retrieving deployment")
 	}
 
 	replicaSetContent, err := drs.replicaSets(deployment, c)
 	if err != nil {
-		log.Printf("wtf2: %v", err)
-		return nil, err
+		return nil, errors.Wrap(err, "rendering replicasets")
 	}
 	contents = append(contents, replicaSetContent...)
 
@@ -89,16 +86,18 @@ func (drs *DeploymentReplicaSets) replicaSets(deployment *extensions.Deployment,
 
 	newReplicaSet := findNewReplicaSet(deployment, replicaSets)
 
-	err = printContentObject(
-		"New Replica Set",
-		"",
-		"",
-		replicaSetTransforms,
-		newReplicaSet,
-		&contents,
-	)
-	if err != nil {
-		return nil, errors.Wrap(err, "unable to print new replica set")
+	if newReplicaSet != nil {
+		err = printContentObject(
+			"New Replica Set",
+			"",
+			"",
+			replicaSetTransforms,
+			newReplicaSet,
+			&contents,
+		)
+		if err != nil {
+			return nil, errors.Wrap(err, "unable to print new replica set")
+		}
 	}
 
 	oldList := &extensions.ReplicaSetList{}
