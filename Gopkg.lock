@@ -11,35 +11,14 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:26704e062180e7a3f532db010ad5b29564c5e77e3c46abf791f79bb0e92e2071"
-  name = "github.com/GeertJohan/go.incremental"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "1172aab965109e2a70720a0f144b2a5dfeb92fa5"
-
-[[projects]]
-  branch = "master"
-  digest = "1:2e42d5423efdf4e8602a2281118ad9103b1bf537aecc7b11a08a93b436debcaa"
+  digest = "1:65796e5fdb94d94bc0ee6bc422aa3541dbe69ed4da275cb5a27f8fa141f4e35c"
   name = "github.com/GeertJohan/go.rice"
   packages = [
     ".",
     "embedded",
   ]
-  pruneopts = "T"
-  revision = "c02ca9a983da5807ddf7d796784928f5be4afd09"
-
-[[projects]]
-  digest = "1:057027049ac90cab890ec65319a99bdbfa03aee9449a0044bdcb0e12f07c78b5"
-  name = "github.com/akavel/rsrc"
-  packages = [
-    ".",
-    "binutil",
-    "coff",
-    "ico",
-  ]
   pruneopts = "UT"
-  revision = "a1fbfaf19b9ec69d75039b2a7cb4b048aecefddf"
-  version = "v2"
+  revision = "c02ca9a983da5807ddf7d796784928f5be4afd09"
 
 [[projects]]
   branch = "master"
@@ -235,14 +214,6 @@
   pruneopts = "UT"
   revision = "76626ae9c91c4f2a10f34cad8ce83ea42c93bb75"
   version = "v1.0"
-
-[[projects]]
-  digest = "1:a2cff208d4759f6ba1b1cd228587b0a1869f95f22542ec9cd17fff64430113c7"
-  name = "github.com/jessevdk/go-flags"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "c6ca198ec95c841fdb89fc0de7496fed11ab854e"
-  version = "v1.4.0"
 
 [[projects]]
   digest = "1:3e551bbb3a7c0ab2a2bf4660e7fcad16db089fdcfbb44b0199e62838038623ea"
@@ -938,15 +909,12 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
-    "github.com/GeertJohan/go.incremental",
     "github.com/GeertJohan/go.rice",
     "github.com/GeertJohan/go.rice/embedded",
-    "github.com/akavel/rsrc",
     "github.com/davecgh/go-spew/spew",
     "github.com/gorilla/handlers",
     "github.com/gorilla/mux",
     "github.com/heptio/go-telemetry/pkg/telemetry",
-    "github.com/jessevdk/go-flags",
     "github.com/pkg/errors",
     "github.com/skratchdot/open-golang/open",
     "github.com/spf13/cobra",
@@ -970,6 +938,7 @@
     "k8s.io/apimachinery/pkg/util/duration",
     "k8s.io/apimachinery/pkg/util/intstr",
     "k8s.io/apimachinery/pkg/util/runtime",
+    "k8s.io/apimachinery/pkg/util/sets",
     "k8s.io/apimachinery/pkg/watch",
     "k8s.io/client-go/discovery",
     "k8s.io/client-go/discovery/fake",
@@ -983,6 +952,8 @@
     "k8s.io/kubernetes/pkg/apis/apps",
     "k8s.io/kubernetes/pkg/apis/batch",
     "k8s.io/kubernetes/pkg/apis/core",
+    "k8s.io/kubernetes/pkg/apis/core/helper",
+    "k8s.io/kubernetes/pkg/apis/core/helper/qos",
     "k8s.io/kubernetes/pkg/apis/extensions",
     "k8s.io/kubernetes/pkg/apis/rbac",
     "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/scheme",
