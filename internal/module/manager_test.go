@@ -15,7 +15,7 @@ func TestManager(t *testing.T) {
 		newUnstructured("apps/v1", "Deployment", "default", "deploy3"),
 	}
 
-	clusterClient, err := fake.NewClient(scheme, objects)
+	clusterClient, err := fake.NewClient(scheme, nil, objects)
 	require.NoError(t, err)
 
 	manager, err := NewManager(clusterClient, "default", log.NopLogger())
