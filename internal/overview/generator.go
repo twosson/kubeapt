@@ -212,6 +212,7 @@ var (
 		Titles:     ResourceTitle{List: "Config Maps", Object: "Config Map"},
 		Transforms: configMapTransforms,
 		Views: []View{
+			NewConfigMapSummary(),
 			NewConfigMapDetails(),
 		},
 	})

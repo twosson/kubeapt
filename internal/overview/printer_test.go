@@ -6,6 +6,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/twosson/kubeapt/internal/content"
 	"k8s.io/kubernetes/pkg/apis/batch"
+	"k8s.io/kubernetes/pkg/apis/core"
 	"testing"
 )
 
@@ -33,6 +34,25 @@ func Test_printCronJobSummary(t *testing.T) {
 	expected.AddText("Starting Deadline Seconds", "<unset>")
 
 	assert.Equal(t, expected, got)
+}
+
+func Test_printConfigMapSummary(t *testing.T) {
+	object := loadFromFile(t, "configmap-1.yaml")
+	var configMap *core.ConfigMap
+	configMap, ok := convertToInternal(t, object).(*core.ConfigMap)
+	require.True(t, ok)
+
+	got, err := printConfigMapSummary(configMap)
+	require.NoError(t, err)
+
+	expected := content.NewSection()
+	expected.AddText("Name", "appdata")
+	expected.AddText("Namespace", "default")
+	expected.AddText("Labels", "<none>")
+	expected.AddText("Annotations", "<none>")
+
+	assert.Equal(t, expected, got)
+
 }
 
 func Test_gvkPath(t *testing.T) {

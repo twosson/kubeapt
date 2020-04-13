@@ -8,9 +8,33 @@ import (
 	"k8s.io/kubernetes/pkg/apis/core"
 )
 
-// ConfigMapDetails describe the details of a kubernetes core.ConfigMap
-type ConfigMapDetails struct {
+type ConfigMapSummary struct{}
+
+var _ View = (*ConfigMapSummary)(nil)
+
+func NewConfigMapSummary() *ConfigMapSummary {
+	return &ConfigMapSummary{}
 }
+
+func (js *ConfigMapSummary) Content(ctx context.Context, object runtime.Object, c Cache) ([]content.Content, error) {
+	configMap, err := retrieveConfigMap(object)
+	if err != nil {
+		return nil, err
+	}
+
+	detail, err := printConfigMapSummary(configMap)
+	if err != nil {
+		return nil, err
+	}
+
+	summary := content.NewSummary("Details", []content.Section{detail})
+	return []content.Content{
+		&summary,
+	}, nil
+}
+
+// ConfigMapDetails describe the details of a kubernetes core.ConfigMap
+type ConfigMapDetails struct{}
 
 // NewConfigMapDetails constructs a new ConfigMapDetails object
 func NewConfigMapDetails() *ConfigMapDetails {
@@ -39,4 +63,13 @@ func (cm *ConfigMapDetails) Content(ctx context.Context, object runtime.Object, 
 	}
 
 	return []content.Content{&table}, nil
+}
+
+func retrieveConfigMap(object runtime.Object) (*core.ConfigMap, error) {
+	rc, ok := object.(*core.ConfigMap)
+	if !ok {
+		return nil, errors.Errorf("expected object to be a ConfigMap, it was %T", object)
+	}
+
+	return rc, nil
 }
