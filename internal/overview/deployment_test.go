@@ -66,6 +66,16 @@ func TestDeploymentSummary(t *testing.T) {
 				},
 				Type: extensions.RollingUpdateDeploymentStrategyType,
 			},
+			Template: core.PodTemplateSpec{
+				Spec: core.PodSpec{
+					Containers: []core.Container{
+						{
+							Name:  "containerName",
+							Image: "image",
+						},
+					},
+				},
+			},
 		},
 		Status: extensions.DeploymentStatus{
 			UpdatedReplicas:     1,
@@ -80,7 +90,7 @@ func TestDeploymentSummary(t *testing.T) {
 	contents, err := ds.Content(ctx, object, cache)
 	require.NoError(t, err)
 
-	summary := content.NewSummary("Details", []content.Section{
+	details := content.NewSummary("Details", []content.Section{
 		{
 			Items: []content.Item{
 				content.TextItem("Name", "deployment"),
@@ -98,8 +108,35 @@ func TestDeploymentSummary(t *testing.T) {
 		},
 	})
 
+	podTemplate := content.NewSummary("Pod Template", []content.Section{
+		{
+			Items: []content.Item{
+				content.TextItem("Labels", "<none>"),
+			},
+		},
+	})
+
+	containerTemplate := content.NewSummary("Container Template", []content.Section{
+		{
+			Title: "containerName",
+			Items: []content.Item{
+				content.TextItem("Image", "image"),
+				content.TextItem("Port", "<none>"),
+				content.TextItem("Host Port", "<none>"),
+				content.TextItem("Environment", "<none>"),
+				content.ListItem("Mounts", map[string]string{}),
+			},
+		},
+	})
+
+	containerEnvTable := content.NewTable("Environment From")
+	containerEnvTable.Columns = tableCols("Name", "From", "Prefix", "Optional")
+
 	expected := []content.Content{
-		&summary,
+		&details,
+		&podTemplate,
+		&containerTemplate,
+		&containerEnvTable,
 	}
 
 	assert.Equal(t, expected, contents)
