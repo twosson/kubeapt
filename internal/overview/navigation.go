@@ -3,12 +3,18 @@ package overview
 import (
 	"github.com/twosson/kubeapt/internal/apt"
 	"path"
+	"strings"
 )
 
 func navigationEntries(root string) (*apt.Navigation, error) {
+	rootPath := root
+	if !strings.HasSuffix(rootPath, "/") {
+		rootPath = rootPath + "/"
+	}
+
 	n := &apt.Navigation{
 		Title: "Overview",
-		Path:  path.Join(root, "/"),
+		Path:  rootPath,
 		Children: []*apt.Navigation{
 			{
 				Title: "Workloads",
@@ -78,12 +84,17 @@ func navigationEntries(root string) (*apt.Navigation, error) {
 						Title: "Secrets",
 						Path:  path.Join(root, "config-and-storage/secrets"),
 					},
+					{
+						Title: "Service Accounts",
+						Path:  path.Join(root, "config-and-storage/service-accounts"),
+					},
 				},
 			},
-			{
-				Title: "Custom Resources",
-				Path:  path.Join(root, "custom-resources"),
-			},
+			// TODO: re-enable when there is code to support CRD
+			// {
+			// 	Title: "Custom Resources",
+			// 	Path:  path.Join(root, "custom-resources"),
+			// },
 			{
 				Title: "RBAC",
 				Path:  path.Join(root, "rbac"),

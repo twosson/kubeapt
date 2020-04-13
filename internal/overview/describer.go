@@ -137,15 +137,14 @@ type ObjectDescriber struct {
 	views               []View
 }
 
-func NewObjectDescriber(p string, baseTitle string, loaderFunc LoaderFunc, objectType func() interface{}, otf ObjectTransformFunc, views []View) *ObjectDescriber {
+func NewObjectDescriber(p, baseTitle string, loaderFunc LoaderFunc, objectType func() interface{}, views []View) *ObjectDescriber {
 	return &ObjectDescriber{
-		path:                p,
-		baseTitle:           baseTitle,
-		baseDescriber:       newBaseDescriber(),
-		loaderFunc:          loaderFunc,
-		objectType:          objectType,
-		objectTransformFunc: otf,
-		views:               views,
+		path:          p,
+		baseTitle:     baseTitle,
+		baseDescriber: newBaseDescriber(),
+		loaderFunc:    loaderFunc,
+		objectType:    objectType,
+		views:         views,
 	}
 }
 
@@ -169,11 +168,6 @@ func (d *ObjectDescriber) Describe(ctx context.Context, prefix, namespace string
 		return emptyContentResponse, err
 	}
 
-	// err = runtime.DefaultUnstructuredConverter.FromUnstructured(object.Object, item)
-	// if err != nil {
-	// 	return emptyContentResponse, err
-	// }
-
 	if err := copyObjectMeta(item, object); err != nil {
 		return emptyContentResponse, errors.Wrapf(err, "copying object metadata")
 	}
@@ -192,14 +186,6 @@ func (d *ObjectDescriber) Describe(ctx context.Context, prefix, namespace string
 	if !ok {
 		return emptyContentResponse, errors.Errorf("expected item to be a runtime object. It was a %T", item)
 	}
-
-	otf := d.objectTransformFunc(namespace, prefix, &contents)
-	if err := printObject(newObject, otf); err != nil {
-		return emptyContentResponse, err
-	}
-
-	// TODO should show parents here
-	// TODO will need to register a map of object transformers?
 
 	for _, v := range d.views {
 		viewContent, err := v.Content(ctx, newObject, options.Cache)
