@@ -1,9 +1,13 @@
 package overview
 
 import (
-	"github.com/pkg/errors"
+	"context"
 	"github.com/twosson/kubeapt/internal/log"
 	"github.com/twosson/kubeapt/third_party/dynamic/dynamicinformer"
+	"sync"
+	"time"
+
+	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -12,8 +16,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/tools/cache"
-	"sync"
-	"time"
 )
 
 // InformerCacheOpt is an option for configuring memory cache.
@@ -201,6 +203,24 @@ func (c *InformerCache) installHandler(informer cache.SharedInformer) {
 	c.handlerInstalled[informer] = true
 }
 
+// channelContext returns a cancellation context that acts as the child of
+// a parent channel - the context will close when the returned CancelFunc is
+// called or when the parent channel is closed, whichever happens first.
+// Note the caller is responsible for *always* calling CancelFunc, otherwise resources
+// can be leaked.
+func channelContext(parentCh <-chan struct{}) (context.Context, context.CancelFunc) {
+	ctx, cancel := context.WithCancel(context.Background())
+
+	go func() {
+		select {
+		case <-parentCh:
+			cancel()
+		case <-ctx.Done():
+		}
+	}()
+	return ctx, cancel
+}
+
 // Retrieve retrieves an object or list of objects from the cluster via cache.
 // Blocks if cache needs to be synced.
 func (c *InformerCache) Retrieve(key CacheKey) ([]*unstructured.Unstructured, error) {
@@ -225,7 +245,18 @@ func (c *InformerCache) Retrieve(key CacheKey) ([]*unstructured.Unstructured, er
 	c.installHandler(informer)
 	factory.Start(c.stopCh) // Start fetching resources now (if first time using this informer)
 
-	if !cache.WaitForCacheSync(c.stopCh, informer.HasSynced) {
+	// <WORKAROUND>
+	// Until upstream issue in the wait package is resolved, we *must* ensure that the
+	// stopCh passed to WaitForCacheSync is closed to avoid leaking goroutines spawned within.
+	// We create a new channel for this purpose, as we do not want to cancel our factories and watches.
+	ctx, cancel := channelContext(c.stopCh)
+	defer cancel()
+	// </WORKAROUND>
+
+	// Block until cache is synced or context is closed via c.stopCh.
+	// Note the context must be closed even after uninterrupted return
+	// to ensure cleanup of resources.
+	if !cache.WaitForCacheSync(ctx.Done(), informer.HasSynced) {
 		return nil, errors.New("shutdown requested")
 	}
 	// c.logger.With("key", key, "gvk", gvk, "resource", restMapping.Resource).Debugf("cache sync complete")
