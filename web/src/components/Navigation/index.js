@@ -1,7 +1,7 @@
 import React from 'react'
 import _ from 'lodash'
 import Selector from 'components/Selector'
-import Section from './components/Section'
+import Section from './components/NavigationSection'
 import './styles.scss'
 
 export default function Navigation ({
