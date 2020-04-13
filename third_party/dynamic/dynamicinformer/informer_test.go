@@ -18,8 +18,8 @@ package dynamicinformer_test
 
 import (
 	"context"
-	"github.com/twosson/kubeapt/internal/cluster/fake"
 	"github.com/twosson/kubeapt/third_party/dynamic/dynamicinformer"
+	"github.com/twosson/kubeapt/third_party/dynamicfake"
 	"testing"
 	"time"
 
@@ -41,7 +41,7 @@ func TestDynamicSharedInformerFactory(t *testing.T) {
 		existingObj *unstructured.Unstructured
 		gvr         schema.GroupVersionResource
 		ns          string
-		trigger     func(gvr schema.GroupVersionResource, ns string, fakeClient *fake.FakeDynamicClient, testObject *unstructured.Unstructured) *unstructured.Unstructured
+		trigger     func(gvr schema.GroupVersionResource, ns string, fakeClient *dynamicfake.FakeDynamicClient, testObject *unstructured.Unstructured) *unstructured.Unstructured
 		handler     func(rcvCh chan<- *unstructured.Unstructured) *cache.ResourceEventHandlerFuncs
 	}{
 		// scenario 1
@@ -49,7 +49,7 @@ func TestDynamicSharedInformerFactory(t *testing.T) {
 			name: "scenario 1: test if adding an object triggers AddFunc",
 			ns:   "ns-foo",
 			gvr:  schema.GroupVersionResource{Group: "extensions", Version: "v1beta1", Resource: "deployments"},
-			trigger: func(gvr schema.GroupVersionResource, ns string, fakeClient *fake.FakeDynamicClient, _ *unstructured.Unstructured) *unstructured.Unstructured {
+			trigger: func(gvr schema.GroupVersionResource, ns string, fakeClient *dynamicfake.FakeDynamicClient, _ *unstructured.Unstructured) *unstructured.Unstructured {
 				testObject := newUnstructured("extensions/v1beta1", "Deployment", "ns-foo", "name-foo")
 				createdObj, err := fakeClient.Resource(gvr).Namespace(ns).Create(testObject)
 				if err != nil {
@@ -72,7 +72,7 @@ func TestDynamicSharedInformerFactory(t *testing.T) {
 			ns:          "ns-foo",
 			gvr:         schema.GroupVersionResource{Group: "extensions", Version: "v1beta1", Resource: "deployments"},
 			existingObj: newUnstructured("extensions/v1beta1", "Deployment", "ns-foo", "name-foo"),
-			trigger: func(gvr schema.GroupVersionResource, ns string, fakeClient *fake.FakeDynamicClient, testObject *unstructured.Unstructured) *unstructured.Unstructured {
+			trigger: func(gvr schema.GroupVersionResource, ns string, fakeClient *dynamicfake.FakeDynamicClient, testObject *unstructured.Unstructured) *unstructured.Unstructured {
 				testObject.Object["spec"] = "updatedName"
 				updatedObj, err := fakeClient.Resource(gvr).Namespace(ns).Update(testObject)
 				if err != nil {
@@ -95,7 +95,7 @@ func TestDynamicSharedInformerFactory(t *testing.T) {
 			ns:          "ns-foo",
 			gvr:         schema.GroupVersionResource{Group: "extensions", Version: "v1beta1", Resource: "deployments"},
 			existingObj: newUnstructured("extensions/v1beta1", "Deployment", "ns-foo", "name-foo"),
-			trigger: func(gvr schema.GroupVersionResource, ns string, fakeClient *fake.FakeDynamicClient, testObject *unstructured.Unstructured) *unstructured.Unstructured {
+			trigger: func(gvr schema.GroupVersionResource, ns string, fakeClient *dynamicfake.FakeDynamicClient, testObject *unstructured.Unstructured) *unstructured.Unstructured {
 				err := fakeClient.Resource(gvr).Namespace(ns).Delete(testObject.GetName(), &metav1.DeleteOptions{})
 				if err != nil {
 					t.Error(err)
@@ -124,7 +124,7 @@ func TestDynamicSharedInformerFactory(t *testing.T) {
 			if ts.existingObj != nil {
 				objs = append(objs, ts.existingObj)
 			}
-			fakeClient := fake.NewSimpleDynamicClient(scheme, objs...)
+			fakeClient := dynamicfake.NewSimpleDynamicClient(scheme, objs...)
 			target := dynamicinformer.NewDynamicSharedInformerFactory(fakeClient, 0)
 
 			// act
