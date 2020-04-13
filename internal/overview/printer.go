@@ -4,19 +4,11 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/twosson/kubeapt/internal/content"
-	"k8s.io/kubernetes/pkg/printers/internalversion"
-	"path"
-	"sort"
-	"strings"
-	"time"
-
-	"k8s.io/apimachinery/pkg/util/intstr"
-
 	corev1 "k8s.io/api/core/v1"
-
 	"k8s.io/api/extensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/clock"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/apimachinery/pkg/util/sets"
 	resourcehelper "k8s.io/kubernetes/pkg/api/resource"
 	"k8s.io/kubernetes/pkg/apis/apps"
@@ -26,6 +18,11 @@ import (
 	"k8s.io/kubernetes/pkg/apis/core/helper/qos"
 	"k8s.io/kubernetes/pkg/apis/extensions"
 	"k8s.io/kubernetes/pkg/apis/rbac"
+	"k8s.io/kubernetes/pkg/printers/internalversion"
+	"path"
+	"sort"
+	"strings"
+	"time"
 )
 
 func printCronJobSummary(cronJob *batch.CronJob, jobs []*batch.Job) (content.Section, error) {
@@ -453,17 +450,6 @@ func printIngressSummary(ingress *v1beta1.Ingress) (content.Section, error) {
 	// TODO: will need to know the service this points to.
 	section.AddText("Default Backend", fmt.Sprintf("%s (%s)",
 		backendStringer(def), "<none>"))
-
-	return section, nil
-}
-
-func printConfigMapSummary(configMap *core.ConfigMap) (content.Section, error) {
-	section := content.NewSection()
-	section.AddText("Name", configMap.GetName())
-	section.AddText("Namespace", configMap.GetNamespace())
-
-	section.AddLabels("Labels", configMap.GetLabels())
-	section.AddLabels("Annotations", configMap.GetAnnotations())
 
 	return section, nil
 }

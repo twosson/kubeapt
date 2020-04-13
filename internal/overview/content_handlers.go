@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/twosson/kubeapt/internal/content"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"sort"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -14,6 +15,7 @@ import (
 
 type lookupFunc func(namespace, prefix string, cell interface{}) content.Text
 
+// loadObjects loads objects from the cache sorted by their name.
 func loadObjects(ctx context.Context, cache Cache, namespace string, fields map[string]string, cacheKeys []CacheKey) ([]*unstructured.Unstructured, error) {
 	var objects []*unstructured.Unstructured
 
@@ -24,13 +26,18 @@ func loadObjects(ctx context.Context, cache Cache, namespace string, fields map[
 			cacheKey.Name = name
 		}
 
-		objs, err := cache.Retrieve(cacheKey)
+		cacheObjects, err := cache.Retrieve(cacheKey)
 		if err != nil {
 			return nil, err
 		}
 
-		objects = append(objects, objs...)
+		objects = append(objects, cacheObjects...)
 	}
+
+	sort.SliceStable(objects, func(i, j int) bool {
+		a, b := objects[i], objects[j]
+		return a.GetName() < b.GetName()
+	})
 
 	return objects, nil
 }
