@@ -31,7 +31,7 @@ func printCronJobSummary(cronJob *batch.CronJob, jobs []*batch.Job) (content.Sec
 	section.AddText("Name", cronJob.GetName())
 	section.AddText("Namespace", cronJob.GetNamespace())
 	section.AddLabels("Labels", cronJob.GetLabels())
-	section.AddLabels("Annotations", cronJob.GetAnnotations())
+	section.AddList("Annotations", cronJob.GetAnnotations())
 	section.AddTimestamp("Create Time", formatTime(&cronJob.CreationTimestamp))
 
 	active := fmt.Sprintf("%d", len(cronJob.Status.Active))
@@ -68,7 +68,7 @@ func printDeploymentSummary(deployment *extensions.Deployment) (content.Section,
 	section.AddText("Name", deployment.GetName())
 	section.AddText("Namespace", deployment.GetNamespace())
 	section.AddLabels("Labels", deployment.GetLabels())
-	section.AddLabels("Annotations", deployment.GetAnnotations())
+	section.AddList("Annotations", deployment.GetAnnotations())
 	section.AddTimestamp("Creation Time", deployment.CreationTimestamp.Time.UTC().Format(time.RFC3339))
 
 	selector, err := metav1.LabelSelectorAsSelector(deployment.Spec.Selector)
@@ -119,7 +119,7 @@ func printJobSummary(job *batch.Job, pods []*core.Pod) (content.Section, error) 
 	section.AddText("Selector", selector.String())
 
 	section.AddLabels("Labels", job.GetLabels())
-	section.AddLabels("Annotations", job.GetAnnotations())
+	section.AddList("Annotations", job.GetAnnotations())
 
 	if controllerRef := metav1.GetControllerOf(job); controllerRef != nil {
 		section.AddLink("Controlled By", controllerRef.Name, controlledByPath(controllerRef))
@@ -163,7 +163,7 @@ func printPodSummary(pod *core.Pod, c clock.Clock) (content.Section, error) {
 	section.AddText("Node", stringOrNone(pod.Spec.NodeName))
 	section.AddTimestamp("Start Time", formatTime(pod.Status.StartTime))
 	section.AddLabels("Labels", pod.GetLabels())
-	section.AddLabels("Annotations", pod.GetAnnotations())
+	section.AddList("Annotations", pod.GetAnnotations())
 
 	if pod.DeletionTimestamp != nil {
 		ts := translateTimestamp(*pod.DeletionTimestamp, c)
@@ -212,14 +212,10 @@ func printDaemonSetSummary(replicaSet *extensions.DaemonSet, pods []*core.Pod) (
 	section.AddText("Name", replicaSet.GetName())
 	section.AddText("Namespace", replicaSet.GetNamespace())
 
-	selector, err := metav1.LabelSelectorAsSelector(replicaSet.Spec.Selector)
-	if err != nil {
-		return content.Section{}, err
-	}
-	section.AddText("Selector", selector.String())
+	section.AddList("Selector", replicaSet.Spec.Selector.MatchLabels)
 
 	section.AddLabels("Labels", replicaSet.GetLabels())
-	section.AddLabels("Annotations", replicaSet.GetAnnotations())
+	section.AddList("Annotations", replicaSet.GetAnnotations())
 
 	ps := createPodStatus(pods)
 
@@ -243,7 +239,7 @@ func printReplicaSetSummary(replicaSet *extensions.ReplicaSet, pods []*core.Pod)
 	section.AddText("Selector", selector.String())
 
 	section.AddLabels("Labels", replicaSet.GetLabels())
-	section.AddLabels("Annotations", replicaSet.GetAnnotations())
+	section.AddList("Annotations", replicaSet.GetAnnotations())
 
 	ps := createPodStatus(pods)
 
@@ -268,16 +264,10 @@ func printReplicationControllerSummary(rc *core.ReplicationController, pods []*c
 	section.AddText("Name", rc.GetName())
 	section.AddText("Namespace", rc.GetNamespace())
 
-	ls := &metav1.LabelSelector{MatchLabels: rc.Spec.Selector}
-	selector, err := metav1.LabelSelectorAsSelector(ls)
-	if err != nil {
-		return content.Section{}, err
-	}
-
-	section.AddText("Selector", selector.String())
+	section.AddList("Selector", rc.Spec.Selector)
 
 	section.AddLabels("Labels", rc.GetLabels())
-	section.AddLabels("Annotations", rc.GetAnnotations())
+	section.AddList("Annotations", rc.GetAnnotations())
 
 	section.AddText("Replicas", fmt.Sprintf("%d current / %d desired",
 		rc.Status.Replicas, rc.Spec.Replicas))
@@ -298,15 +288,10 @@ func printStatefulSetSummary(ss *apps.StatefulSet, pods []*core.Pod) (content.Se
 	section.AddText("Namespace", ss.GetNamespace())
 	section.AddText("CreationTimestamp", formatTime(&ss.CreationTimestamp))
 
-	selector, err := metav1.LabelSelectorAsSelector(ss.Spec.Selector)
-	if err != nil {
-		return content.Section{}, err
-	}
-
-	section.AddText("Selector", selector.String())
+	section.AddList("Selector", ss.Spec.Selector.MatchLabels)
 
 	section.AddLabels("Labels", ss.GetLabels())
-	section.AddLabels("Annotations", ss.GetAnnotations())
+	section.AddList("Annotations", ss.GetAnnotations())
 
 	section.AddText("Replicas", fmt.Sprintf("%d current / %d desired",
 		ss.Status.Replicas, ss.Spec.Replicas))
@@ -336,7 +321,7 @@ func printServiceSummary(s *core.Service) (content.Section, error) {
 	section.AddText("Namespace", s.GetNamespace())
 
 	section.AddLabels("Labels", s.GetLabels())
-	section.AddLabels("Annotations", s.GetAnnotations())
+	section.AddList("Annotations", s.GetAnnotations())
 	section.AddText("Type", string(s.Spec.Type))
 	section.AddText("IP", s.Spec.ClusterIP)
 
@@ -380,7 +365,7 @@ func printServiceAccountSummary(serviceAccount *core.ServiceAccount, tokens []*c
 	section.AddText("Namespace", serviceAccount.GetNamespace())
 
 	section.AddLabels("Labels", serviceAccount.GetLabels())
-	section.AddLabels("Annotations", serviceAccount.GetAnnotations())
+	section.AddList("Annotations", serviceAccount.GetAnnotations())
 
 	var (
 		emptyHeader = ""
@@ -434,7 +419,7 @@ func printIngressSummary(ingress *v1beta1.Ingress) (content.Section, error) {
 	section.AddText("Namespace", ingress.GetNamespace())
 
 	section.AddLabels("Labels", ingress.GetLabels())
-	section.AddLabels("Annotations", ingress.GetAnnotations())
+	section.AddList("Annotations", ingress.GetAnnotations())
 
 	def := ingress.Spec.Backend
 	// ns := ingress.Namespace
@@ -454,13 +439,24 @@ func printIngressSummary(ingress *v1beta1.Ingress) (content.Section, error) {
 	return section, nil
 }
 
+func printConfigMapSummary(configMap *core.ConfigMap) (content.Section, error) {
+	section := content.NewSection()
+	section.AddText("Name", configMap.GetName())
+	section.AddText("Namespace", configMap.GetNamespace())
+
+	section.AddLabels("Labels", configMap.GetLabels())
+	section.AddList("Annotations", configMap.GetAnnotations())
+
+	return section, nil
+}
+
 func printSecretSummary(secret *core.Secret) (content.Section, error) {
 	section := content.NewSection()
 	section.AddText("Name", secret.GetName())
 	section.AddText("Namespace", secret.GetNamespace())
 
 	section.AddLabels("Labels", secret.GetLabels())
-	section.AddLabels("Annotations", secret.GetAnnotations())
+	section.AddList("Annotations", secret.GetAnnotations())
 	section.AddText("Type", string(secret.Type))
 
 	return section, nil
@@ -483,7 +479,7 @@ func printPersistentVolumeClaimSummary(pvc *core.PersistentVolumeClaim) (content
 	section.AddText("Volume", pvc.Spec.VolumeName)
 
 	section.AddLabels("Labels", pvc.GetLabels())
-	section.AddLabels("Annotations", pvc.GetAnnotations())
+	section.AddList("Annotations", pvc.GetAnnotations())
 
 	section.AddText("Finalizers", strings.Join(pvc.ObjectMeta.Finalizers, ", "))
 
@@ -512,7 +508,7 @@ func printRoleSummary(role *rbac.Role) (content.Section, error) {
 	section.AddText("Namespace", role.GetNamespace())
 
 	section.AddLabels("Labels", role.GetLabels())
-	section.AddLabels("Annotations", role.GetAnnotations())
+	section.AddList("Annotations", role.GetAnnotations())
 
 	return section, nil
 }
@@ -563,7 +559,7 @@ func printRoleBindingSummary(roleBinding *rbac.RoleBinding, role *rbac.Role) (co
 	section.AddText("Namespace", roleBinding.GetNamespace())
 
 	section.AddLabels("Labels", roleBinding.GetLabels())
-	section.AddLabels("Annotations", roleBinding.GetAnnotations())
+	section.AddList("Annotations", roleBinding.GetAnnotations())
 
 	section.AddLink("Role", role.GetName(), gvkPath(role.APIVersion, role.Kind, role.Name))
 
