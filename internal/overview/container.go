@@ -5,6 +5,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/twosson/kubeapt/internal/content"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/util/clock"
 	"k8s.io/kubernetes/pkg/apis/apps"
 	"k8s.io/kubernetes/pkg/apis/batch"
 	"k8s.io/kubernetes/pkg/apis/core"
@@ -15,7 +16,7 @@ type ContainerSummary struct{}
 
 var _ View = (*ContainerSummary)(nil)
 
-func NewContainerSummary() *ContainerSummary {
+func NewContainerSummary(prefix, namespace string, c clock.Clock) View {
 	return &ContainerSummary{}
 }
 

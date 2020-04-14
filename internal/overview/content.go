@@ -5,8 +5,13 @@ import (
 )
 
 type ContentResponse struct {
-	Contents []content.Content `json:"contents,omitempty"`
-	Title    string            `json:"title,omitempty"`
+	Views       map[string]Content `json:"views,omitempty"`
+	DefaultView string             `json:"default_view,omitempty"`
 }
 
 var emptyContentResponse = ContentResponse{}
+
+type Content struct {
+	Contents []content.Content `json:"contents,omitempty"`
+	Title    string            `json:"title,omitempty"`
+}

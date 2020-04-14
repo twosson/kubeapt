@@ -6,6 +6,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/twosson/kubeapt/internal/content"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/util/clock"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/kubernetes/pkg/apis/core"
 	"k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/scheme"
@@ -15,7 +16,7 @@ type ServiceSummary struct{}
 
 var _ View = (*ServiceSummary)(nil)
 
-func NewServiceSummary() *ServiceSummary {
+func NewServiceSummary(prefix, namespace string, c clock.Clock) View {
 	return &ServiceSummary{}
 }
 
@@ -40,7 +41,7 @@ type ServicePort struct{}
 
 var _ View = (*ServicePort)(nil)
 
-func NewServicePort() *ServicePort {
+func NewServicePort(prefix, namespace string, c clock.Clock) View {
 	return &ServicePort{}
 }
 
@@ -90,7 +91,7 @@ type ServiceEndpoints struct{}
 
 var _ View = (*ServiceEndpoints)(nil)
 
-func NewServiceEndpoints() *ServiceEndpoints {
+func NewServiceEndpoints(prefix, namespace string, c clock.Clock) View {
 	return &ServiceEndpoints{}
 }
 

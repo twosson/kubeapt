@@ -5,15 +5,17 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/twosson/kubeapt/internal/content"
+	"k8s.io/apimachinery/pkg/util/clock"
 	"testing"
+	"time"
 )
 
 func TestCronJobSummary_InvalidObject(t *testing.T) {
-	assertViewInvalidObject(t, NewCronJobSummary())
+	assertViewInvalidObject(t, NewCronJobSummary("prefix", "ns", clock.NewFakeClock(time.Now())))
 }
 
 func TestCronJobSummary(t *testing.T) {
-	s := NewCronJobSummary()
+	s := NewCronJobSummary("prefix", "ns", clock.NewFakeClock(time.Now()))
 
 	ctx := context.Background()
 	cache := NewMemoryCache()
@@ -53,7 +55,7 @@ func TestCronJobSummary(t *testing.T) {
 }
 
 func TestCronJobJobs(t *testing.T) {
-	cjj := NewCronJobJobs()
+	cjj := NewCronJobJobs("prefix", "ns", clock.NewFakeClock(time.Now()))
 
 	ctx := context.Background()
 	cache := NewMemoryCache()

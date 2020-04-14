@@ -4,10 +4,14 @@ import (
 	"context"
 	"github.com/twosson/kubeapt/internal/content"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/clock"
 	"time"
 
 	"k8s.io/apimachinery/pkg/runtime"
 )
+
+// ViewFactory is a function which creates a view.
+type ViewFactory func(prefix, namespace string, c clock.Clock) View
 
 // View is a view that can be embedded in the resource overview.
 type View interface {

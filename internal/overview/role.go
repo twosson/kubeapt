@@ -5,6 +5,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/twosson/kubeapt/internal/content"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/util/clock"
 	"k8s.io/kubernetes/pkg/apis/rbac"
 	"k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/scheme"
 )
@@ -13,7 +14,7 @@ type RoleSummary struct{}
 
 var _ View = (*RoleSummary)(nil)
 
-func NewRoleSummary() *RoleSummary {
+func NewRoleSummary(prefix, namespace string, c clock.Clock) View {
 	return &RoleSummary{}
 }
 
@@ -38,7 +39,7 @@ type RoleRule struct{}
 
 var _ View = (*RoleRule)(nil)
 
-func NewRoleRule() *RoleRule {
+func NewRoleRule(prefix, namespace string, c clock.Clock) View {
 	return &RoleRule{}
 }
 

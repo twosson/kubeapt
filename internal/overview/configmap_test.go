@@ -6,12 +6,14 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/twosson/kubeapt/internal/content"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/util/clock"
 	"k8s.io/kubernetes/pkg/apis/core"
 	"testing"
+	"time"
 )
 
 func TestConfigMapDetails_InvalidObject(t *testing.T) {
-	cm := NewConfigMapDetails()
+	cm := NewConfigMapDetails("prefix", "ns", clock.NewFakeClock(time.Now()))
 	ctx := context.Background()
 
 	object := &unstructured.Unstructured{}
@@ -21,7 +23,7 @@ func TestConfigMapDetails_InvalidObject(t *testing.T) {
 }
 
 func TestConfigMapDetails(t *testing.T) {
-	cm := NewConfigMapDetails()
+	cm := NewConfigMapDetails("prefix", "ns", clock.NewFakeClock(time.Now()))
 
 	ctx := context.Background()
 	object := &core.ConfigMap{

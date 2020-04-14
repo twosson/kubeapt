@@ -6,15 +6,17 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/twosson/kubeapt/internal/content"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/util/clock"
 	"k8s.io/kubernetes/pkg/apis/apps"
 	"k8s.io/kubernetes/pkg/apis/batch"
 	"k8s.io/kubernetes/pkg/apis/core"
 	"k8s.io/kubernetes/pkg/apis/extensions"
 	"testing"
+	"time"
 )
 
 func TestContainerSummary_invalid_object(t *testing.T) {
-	assertViewInvalidObject(t, NewContainerSummary())
+	assertViewInvalidObject(t, NewContainerSummary("prefix", "ns", clock.NewFakeClock(time.Now())))
 }
 
 func TestContainerSummary(t *testing.T) {
@@ -25,7 +27,7 @@ func TestContainerSummary(t *testing.T) {
 	require.True(t, ok)
 	cache := NewMemoryCache()
 
-	v := NewContainerSummary()
+	v := NewContainerSummary("prefix", "ns", clock.NewFakeClock(time.Now()))
 
 	got, err := v.Content(ctx, cronJob, cache)
 	require.NoError(t, err)

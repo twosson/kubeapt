@@ -27,12 +27,11 @@ func Test_realGenerator_Generate(t *testing.T) {
 	}
 
 	cases := []struct {
-		name          string
-		path          string
-		initCache     func(*spyCache)
-		expected      []content.Content
-		expectedTitle string
-		isErr         bool
+		name      string
+		path      string
+		initCache func(*spyCache)
+		expected  ContentResponse
+		isErr     bool
 	}{
 		{
 			name: "dynamic content",
@@ -40,8 +39,14 @@ func Test_realGenerator_Generate(t *testing.T) {
 			initCache: func(c *spyCache) {
 				c.spyRetrieve(key, []*unstructured.Unstructured{}, nil)
 			},
-			expected:      stubbedContent,
-			expectedTitle: "A title",
+			expected: ContentResponse{
+				Views: map[string]Content{
+					"main": Content{
+						Contents: stubbedContent,
+						Title:    "section content",
+					},
+				},
+			},
 		},
 		{
 			name:  "invalid path",
@@ -55,8 +60,14 @@ func Test_realGenerator_Generate(t *testing.T) {
 				subKey := CacheKey{Namespace: key.Namespace, Name: "foo"}
 				c.spyRetrieve(subKey, []*unstructured.Unstructured{}, nil)
 			},
-			expected:      stubbedContent,
-			expectedTitle: "A title",
+			expected: ContentResponse{
+				Views: map[string]Content{
+					"main": Content{
+						Contents: stubbedContent,
+						Title:    "section content",
+					},
+				},
+			},
 		},
 	}
 
@@ -83,8 +94,7 @@ func Test_realGenerator_Generate(t *testing.T) {
 
 			require.NoError(t, err)
 
-			assert.Equal(t, tc.expectedTitle, cResponse.Title)
-			assert.Equal(t, tc.expected, cResponse.Contents)
+			assert.Equal(t, tc.expected, cResponse)
 		})
 	}
 }
@@ -156,8 +166,12 @@ func newStubDescriber(p string) *stubDescriber {
 
 func (d *stubDescriber) Describe(context.Context, string, string, cluster.ClientInterface, DescriberOptions) (ContentResponse, error) {
 	return ContentResponse{
-		Contents: stubbedContent,
-		Title:    "A title",
+		Views: map[string]Content{
+			"main": Content{
+				Contents: stubbedContent,
+				Title:    "section content",
+			},
+		},
 	}, nil
 }
 

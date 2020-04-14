@@ -23,6 +23,11 @@ type ResourceTitle struct {
 	Object string
 }
 
+type ContentSection struct {
+	Views []ViewFactory
+	Name  string
+}
+
 type ResourceOptions struct {
 	Path       string
 	CacheKey   CacheKey
@@ -30,7 +35,7 @@ type ResourceOptions struct {
 	ObjectType interface{}
 	Titles     ResourceTitle
 	Transforms map[string]lookupFunc
-	Views      []View
+	Sections   map[string]ContentSection
 }
 
 type Resource struct {
@@ -72,7 +77,7 @@ func (r *Resource) Object() *ObjectDescriber {
 		func() interface{} {
 			return reflect.New(reflect.ValueOf(r.ObjectType).Elem().Type()).Interface()
 		},
-		r.Views,
+		r.Sections,
 	)
 }
 

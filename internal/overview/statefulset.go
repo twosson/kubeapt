@@ -5,6 +5,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/twosson/kubeapt/internal/content"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/util/clock"
 	"k8s.io/kubernetes/pkg/apis/apps"
 )
 
@@ -12,7 +13,7 @@ type StatefulSetSummary struct{}
 
 var _ View = (*StatefulSetSummary)(nil)
 
-func NewStatefulSetSummary() *StatefulSetSummary {
+func NewStatefulSetSummary(prefix, namespace string, c clock.Clock) View {
 	return &StatefulSetSummary{}
 }
 

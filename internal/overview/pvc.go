@@ -5,6 +5,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/twosson/kubeapt/internal/content"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/util/clock"
 	"k8s.io/kubernetes/pkg/apis/core"
 )
 
@@ -12,7 +13,7 @@ type PersistentVolumeClaimSummary struct{}
 
 var _ View = (*PersistentVolumeClaimSummary)(nil)
 
-func NewPersistentVolumeClaimSummary() *PersistentVolumeClaimSummary {
+func NewPersistentVolumeClaimSummary(prefix, namespace string, c clock.Clock) View {
 	return &PersistentVolumeClaimSummary{}
 }
 

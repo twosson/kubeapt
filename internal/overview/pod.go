@@ -18,7 +18,7 @@ import (
 
 type PodList struct{}
 
-func NewPodList() *PodList {
+func NewPodList(prefix, namespace string, c clock.Clock) View {
 	return &PodList{}
 }
 
@@ -65,7 +65,7 @@ type PodSummary struct{}
 
 var _ View = (*PodSummary)(nil)
 
-func NewPodSummary() *PodSummary {
+func NewPodSummary(prefix, namespace string, c clock.Clock) View {
 	return &PodSummary{}
 }
 
@@ -91,7 +91,7 @@ func (ps *PodSummary) Content(ctx context.Context, object runtime.Object, c Cach
 
 type PodCondition struct{}
 
-func NewPodCondition() *PodCondition {
+func NewPodCondition(prefix, namespace string, c clock.Clock) View {
 	return &PodCondition{}
 }
 
@@ -135,7 +135,7 @@ func (pc *PodCondition) Content(ctx context.Context, object runtime.Object, c Ca
 
 type PodContainer struct{}
 
-func NewPodContainer() *PodContainer {
+func NewPodContainer(prefix, namespace string, c clock.Clock) View {
 	return &PodContainer{}
 }
 
@@ -153,7 +153,7 @@ func (pc *PodContainer) Content(ctx context.Context, object runtime.Object, c Ca
 
 type PodVolume struct{}
 
-func NewPodVolume() *PodVolume {
+func NewPodVolume(prefix, namespace string, c clock.Clock) View {
 	return &PodVolume{}
 }
 

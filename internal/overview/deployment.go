@@ -7,6 +7,7 @@ import (
 	apiequality "k8s.io/apimachinery/pkg/api/equality"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/util/clock"
 	"k8s.io/kubernetes/pkg/apis/core"
 	"k8s.io/kubernetes/pkg/apis/extensions"
 	"k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/scheme"
@@ -18,7 +19,7 @@ type DeploymentSummary struct{}
 
 var _ View = (*DeploymentSummary)(nil)
 
-func NewDeploymentSummary() *DeploymentSummary {
+func NewDeploymentSummary(prefix, namespace string, c clock.Clock) View {
 	return &DeploymentSummary{}
 }
 
@@ -49,7 +50,7 @@ type DeploymentReplicaSets struct{}
 
 var _ View = (*DeploymentReplicaSets)(nil)
 
-func NewDeploymentReplicaSets() *DeploymentReplicaSets {
+func NewDeploymentReplicaSets(prefix, namespace string, c clock.Clock) View {
 	return &DeploymentReplicaSets{}
 }
 

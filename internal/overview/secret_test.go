@@ -5,15 +5,17 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/twosson/kubeapt/internal/content"
+	"k8s.io/apimachinery/pkg/util/clock"
 	"testing"
+	"time"
 )
 
 func TestSecretData_InvalidObject(t *testing.T) {
-	assertViewInvalidObject(t, NewSecretData())
+	assertViewInvalidObject(t, NewSecretData("prefix", "ns", clock.NewFakeClock(time.Now())))
 }
 
 func TestSecretData(t *testing.T) {
-	v := NewSecretData()
+	v := NewSecretData("prefix", "ns", clock.NewFakeClock(time.Now()))
 
 	ctx := context.Background()
 	cache := NewMemoryCache()

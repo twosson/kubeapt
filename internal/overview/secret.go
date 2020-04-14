@@ -6,6 +6,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/twosson/kubeapt/internal/content"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/util/clock"
 	"k8s.io/kubernetes/pkg/apis/core"
 	"k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/scheme"
 	"sort"
@@ -16,7 +17,7 @@ type SecretSummary struct{}
 
 var _ View = (*SecretSummary)(nil)
 
-func NewSecretSummary() *SecretSummary {
+func NewSecretSummary(prefix, namespace string, c clock.Clock) View {
 	return &SecretSummary{}
 }
 
@@ -41,7 +42,7 @@ type SecretData struct{}
 
 var _ View = (*SecretData)(nil)
 
-func NewSecretData() *SecretData {
+func NewSecretData(prefix, namespace string, c clock.Clock) View {
 	return &SecretData{}
 }
 

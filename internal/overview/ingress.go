@@ -6,6 +6,7 @@ import (
 	"github.com/twosson/kubeapt/internal/content"
 	"k8s.io/api/extensions/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/util/clock"
 	"strings"
 )
 
@@ -13,7 +14,7 @@ type IngressSummary struct{}
 
 var _ View = (*IngressSummary)(nil)
 
-func NewIngressSummary() *IngressSummary {
+func NewIngressSummary(prefix, namespace string, c clock.Clock) View {
 	return &IngressSummary{}
 }
 
@@ -38,7 +39,7 @@ type IngressDetails struct{}
 
 var _ View = (*IngressDetails)(nil)
 
-func NewIngressDetails() *IngressDetails {
+func NewIngressDetails(prefix, namespace string, c clock.Clock) View {
 	return &IngressDetails{}
 }
 

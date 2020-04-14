@@ -5,19 +5,21 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/twosson/kubeapt/internal/content"
+	"k8s.io/apimachinery/pkg/util/clock"
 	"testing"
+	"time"
 )
 
 func TestIngressSummary_InvalidObject(t *testing.T) {
-	assertViewInvalidObject(t, NewIngressSummary())
+	assertViewInvalidObject(t, NewIngressSummary("prefix", "ns", clock.NewFakeClock(time.Now())))
 }
 
 func TestIngressDetails_InvalidObject(t *testing.T) {
-	assertViewInvalidObject(t, NewIngressDetails())
+	assertViewInvalidObject(t, NewIngressDetails("prefix", "ns", clock.NewFakeClock(time.Now())))
 }
 
 func TestIngressDetails(t *testing.T) {
-	v := NewIngressDetails()
+	v := NewIngressDetails("prefix", "ns", clock.NewFakeClock(time.Now()))
 
 	cache := NewMemoryCache()
 
