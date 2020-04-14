@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import {
-  Switch, Route, withRouter, Redirect, RouteComponentProps
+  Switch, Route, withRouter, Redirect, RouteComponentProps,
 } from 'react-router-dom'
 import _ from 'lodash'
 import { setNamespace } from 'api'
@@ -20,8 +20,10 @@ interface AppState {
   title: string;
 }
 
-class App extends Component<RouteComponentProps, AppState>  {
-  constructor (props) {
+class App extends Component<RouteComponentProps, AppState> {
+  private lastFetchedNamespace: string
+
+  constructor(props) {
     super(props)
     this.state = {
       title: '',
@@ -30,13 +32,11 @@ class App extends Component<RouteComponentProps, AppState>  {
       navigation: null,
       currentNavLinkPath: [],
       namespaceOption: null,
-      namespaceOptions: []
+      namespaceOptions: [],
     }
   }
 
-  lastFetchedNamespace: string;
-
-  async componentDidMount () {
+  async componentDidMount() {
     const { location } = this.props
     const initialState = await getInitialState(location.pathname)
     this.setState(initialState as AppState)
@@ -45,7 +45,7 @@ class App extends Component<RouteComponentProps, AppState>  {
   onNamespaceChange = async (namespaceOption) => {
     this.setState({
       isLoading: true,
-      hasError: false
+      hasError: false,
     })
 
     const { value } = namespaceOption
@@ -67,7 +67,7 @@ class App extends Component<RouteComponentProps, AppState>  {
     }
   }
 
-  render () {
+  render() {
     const {
       isLoading,
       hasError,
@@ -75,7 +75,7 @@ class App extends Component<RouteComponentProps, AppState>  {
       currentNavLinkPath,
       namespaceOptions,
       namespaceOption,
-      title
+      title,
     } = this.state
     const { location } = this.props
 
@@ -86,7 +86,7 @@ class App extends Component<RouteComponentProps, AppState>  {
       currentNamespace = namespaceOption.value
     }
 
-    let navSections = null;
+    let navSections = null
     let rootNavigationPath = '/content/overview/'
     if (navigation && navigation.sections) {
       navSections = navigation.sections
@@ -101,8 +101,7 @@ class App extends Component<RouteComponentProps, AppState>  {
             <Navigation
               navSections={navSections}
               currentNavLinkPath={currentNavLinkPath}
-              onNavChange={linkPath => this.setState({ currentNavLinkPath: linkPath })
-              }
+              onNavChange={(linkPath) => this.setState({ currentNavLinkPath: linkPath })}
               namespaceOptions={namespaceOptions}
               namespaceValue={namespaceOption}
               onNamespaceChange={this.onNamespaceChange}
@@ -112,7 +111,7 @@ class App extends Component<RouteComponentProps, AppState>  {
             <Switch>
               <Route
                 path={rootNavigationPath}
-                render={props => (
+                render={(props) => (
                   <Overview
                     {...props}
                     title={title}
@@ -120,9 +119,8 @@ class App extends Component<RouteComponentProps, AppState>  {
                     namespace={currentNamespace}
                     isLoading={isLoading}
                     hasError={hasError}
-                    setIsLoading={loading => this.setState({ isLoading: loading })
-                    }
-                    setHasError={error => this.setState({ hasError: error })}
+                    setIsLoading={(loading) => this.setState({ isLoading: loading })}
+                    setHasError={(error) => this.setState({ hasError: error })}
                   />
                 )}
               />
