@@ -9,16 +9,17 @@ import (
 	"testing"
 )
 
-func TestNamespaceClient_Names(t *testing.T) {
+func Test_namespaceClient_Names(t *testing.T) {
 	scheme := runtime.NewScheme()
 
-	dc := dynamicfake.NewSimpleDynamicClient(
-		scheme,
+	// NOTE: this should be reverted to the k8s.io/client-go/dynamic/fake when bug fix is
+	// merged upstream
+	dc := dynamicfake.NewSimpleDynamicClient(scheme,
 		newUnstructured("v1", "Namespace", "", "default"),
 		newUnstructured("v1", "Namespace", "", "app-1"),
 	)
 
-	nc := newNamespaceClient(dc)
+	nc := newNamespaceClient(dc, "default")
 
 	got, err := nc.Names()
 	require.NoError(t, err)
@@ -27,13 +28,21 @@ func TestNamespaceClient_Names(t *testing.T) {
 	assert.Equal(t, expected, got)
 }
 
+func Test_namespaceClient_InitialNamespace(t *testing.T) {
+	expected := "inital-namespace"
+	nc := newNamespaceClient(nil, expected)
+	assert.Equal(t, expected, nc.InitialNamespace())
+}
+
 func newUnstructured(apiVersion, kind, namespace, name string) *unstructured.Unstructured {
-	return &unstructured.Unstructured{Object: map[string]interface{}{
-		"apiVersion": apiVersion,
-		"kind":       kind,
-		"metadata": map[string]interface{}{
-			"namespace": namespace,
-			"name":      name,
+	return &unstructured.Unstructured{
+		Object: map[string]interface{}{
+			"apiVersion": apiVersion,
+			"kind":       kind,
+			"metadata": map[string]interface{}{
+				"namespace": namespace,
+				"name":      name,
+			},
 		},
-	}}
+	}
 }

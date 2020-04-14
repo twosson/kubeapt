@@ -14,12 +14,17 @@ import (
 
 // ClusterOverview is an API for generating a cluster overview.
 type ClusterOverview struct {
-	client    cluster.ClientInterface
-	mu        sync.Mutex
+	client cluster.ClientInterface
+
+	mu sync.Mutex
+
 	namespace string
-	logger    log.Logger
-	cache     Cache
-	stopCh    chan struct{}
+
+	logger log.Logger
+
+	cache  Cache
+	stopCh chan struct{}
+
 	generator *realGenerator
 }
 
@@ -81,49 +86,41 @@ func NewClusterOverview(client cluster.ClientInterface, namespace string, logger
 }
 
 // Name returns the name for this module.
-func (c *ClusterOverview) Name() string {
+func (co *ClusterOverview) Name() string {
 	return "overview"
 }
 
 // ContentPath returns the content path for overview.
-func (c *ClusterOverview) ContentPath() string {
-	return fmt.Sprintf("/%s", c.Name())
+func (co *ClusterOverview) ContentPath() string {
+	return fmt.Sprintf("/%s", co.Name())
 }
 
 // Handler returns a handler for serving overview HTTP content.
-func (c *ClusterOverview) Handler(prefix string) http.Handler {
-	return newHandler(prefix, c.generator, stream, c.logger)
+func (co *ClusterOverview) Handler(prefix string) http.Handler {
+	return newHandler(prefix, co.generator, stream, co.logger)
 }
 
-func (c *ClusterOverview) Namespaces() ([]string, error) {
-	nsClient, err := c.client.NamespaceClient()
-	if err != nil {
-		return nil, err
-	}
-
-	return nsClient.Names()
-}
-
-func (c *ClusterOverview) Navigation(root string) (*apt.Navigation, error) {
+// Navigation returns navigation entries for overview.
+func (co *ClusterOverview) Navigation(root string) (*apt.Navigation, error) {
 	return navigationEntries(root)
 }
 
 // SetNamespace sets the current namespace.
-func (c *ClusterOverview) SetNamespace(namespace string) error {
-	c.logger.With("namespace", namespace, "module", "overview").Debugf("setting namespace")
-	c.namespace = namespace
+func (co *ClusterOverview) SetNamespace(namespace string) error {
+	co.logger.With("namespace", namespace, "module", "overview").Debugf("setting namespace")
+	co.namespace = namespace
 	return nil
 }
 
 // Start starts overview.
-func (c *ClusterOverview) Start() error {
+func (co *ClusterOverview) Start() error {
 	return nil
 }
 
 // Stop stops overview.
-func (c *ClusterOverview) Stop() {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-	close(c.stopCh)
-	c.stopCh = nil
+func (co *ClusterOverview) Stop() {
+	co.mu.Lock()
+	defer co.mu.Unlock()
+	close(co.stopCh)
+	co.stopCh = nil
 }
