@@ -85,6 +85,7 @@ func (drs *DeploymentReplicaSets) replicaSets(deployment *extensions.Deployment,
 			"New Replica Set",
 			"",
 			"",
+			"This Deployment does not have a current Replica",
 			replicaSetTransforms,
 			newReplicaSet,
 			&contents,
@@ -103,6 +104,7 @@ func (drs *DeploymentReplicaSets) replicaSets(deployment *extensions.Deployment,
 		"Old Replica Sets",
 		"",
 		"",
+		"This Deployment does not have any old Replicas",
 		replicaSetTransforms,
 		oldList,
 		&contents,
@@ -114,12 +116,12 @@ func (drs *DeploymentReplicaSets) replicaSets(deployment *extensions.Deployment,
 	return contents, nil
 }
 
-func printContentObject(title, namespace, prefix string, transforms map[string]lookupFunc, object runtime.Object, contents *[]content.Content) error {
+func printContentObject(title, namespace, prefix, emptyMessage string, transforms map[string]lookupFunc, object runtime.Object, contents *[]content.Content) error {
 	if reflect.ValueOf(object).IsNil() {
 		return errors.New("unable to print a nil object")
 	}
 
-	otf := summaryFunc(title, transforms)
+	otf := summaryFunc(title, emptyMessage, transforms)
 	transformed := otf(namespace, prefix, contents)
 	return printObject(object, transformed)
 }

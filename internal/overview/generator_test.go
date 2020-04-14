@@ -23,7 +23,7 @@ func Test_realGenerator_Generate(t *testing.T) {
 
 	var pathFilters []pathFilter
 	for _, d := range describers {
-		pathFilters = append(pathFilters, d.PathFilters()...)
+		pathFilters = append(pathFilters, d.PathFilters("default")...)
 	}
 
 	cases := []struct {
@@ -161,7 +161,7 @@ func (d *stubDescriber) Describe(context.Context, string, string, cluster.Client
 	}, nil
 }
 
-func (d *stubDescriber) PathFilters() []pathFilter {
+func (d *stubDescriber) PathFilters(namespace string) []pathFilter {
 	return []pathFilter{
 		*newPathFilter(d.path, d),
 	}

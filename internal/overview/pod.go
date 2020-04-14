@@ -2,7 +2,6 @@ package overview
 
 import (
 	"context"
-	"fmt"
 	"github.com/pkg/errors"
 	"github.com/twosson/kubeapt/internal/content"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -50,6 +49,7 @@ func (pc *PodList) Content(ctx context.Context, object runtime.Object, c Cache) 
 		"Pods",
 		"ns",
 		"prefix",
+		"No pods were found",
 		podTransforms,
 		list,
 		&contents,
@@ -103,7 +103,7 @@ func (pc *PodCondition) Content(ctx context.Context, object runtime.Object, c Ca
 
 	conditions := pod.Status.Conditions
 
-	table := content.NewTable("Conditions")
+	table := content.NewTable("Conditions", "No conditions")
 	table.Columns = []content.TableColumn{
 		tableCol("Type"),
 		tableCol("Status"),

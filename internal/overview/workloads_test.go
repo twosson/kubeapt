@@ -100,10 +100,10 @@ func Test_printCronJobTable(t *testing.T) {
 		},
 	}
 
-	contentTable, err := printContentTable("Title", "default", "/prefix", tbl, cronJobTransforms)
+	contentTable, err := printContentTable("Title", "default", "/prefix", "", tbl, cronJobTransforms)
 	require.NoError(t, err)
 
-	expected := content.NewTable("Title")
+	expected := content.NewTable("Title", "")
 	expected.Columns = []content.TableColumn{
 		newCol("Name"),
 		newCol("Schedule"),
@@ -239,10 +239,10 @@ func Test_printDeploymentTable(t *testing.T) {
 		},
 	}
 
-	contentTable, err := printContentTable("Title", "default", "/prefix", tbl, deploymentTransforms)
+	contentTable, err := printContentTable("Title", "default", "/prefix", "", tbl, deploymentTransforms)
 	require.NoError(t, err)
 
-	expected := content.NewTable("Title")
+	expected := content.NewTable("Title", "")
 	expected.Columns = []content.TableColumn{
 		newCol("Name"),
 		newCol("Desired"),

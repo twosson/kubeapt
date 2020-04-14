@@ -46,7 +46,7 @@ func TestPodList(t *testing.T) {
 		tableCol("Labels"),
 	}
 
-	listTable := content.NewTable("Pods")
+	listTable := content.NewTable("Pods", "No pods were found")
 	listTable.Columns = podColumns
 	listTable.AddRow(
 		content.TableRow{
