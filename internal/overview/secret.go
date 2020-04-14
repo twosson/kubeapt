@@ -8,6 +8,8 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/kubernetes/pkg/apis/core"
 	"k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/scheme"
+	"sort"
+	"strings"
 )
 
 type SecretSummary struct{}
@@ -52,10 +54,17 @@ func (js *SecretData) Content(ctx context.Context, object runtime.Object, c Cach
 	dataSection := content.NewSection()
 	dataSection.Title = "Data"
 
-	for key, data := range secret.Data {
+	var keys []string
+	for k := range secret.Data {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
+	for _, key := range keys {
+		data := secret.Data[key]
 		switch {
 		case key == core.ServiceAccountTokenKey && secret.Type == core.SecretTypeServiceAccountToken:
-			dataSection.AddText(key, string(data))
+			dataSection.AddText(key, strings.TrimSpace(string(data)))
 		default:
 			dataSection.AddText(key, fmt.Sprintf("%d bytes", len(data)))
 		}

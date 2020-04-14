@@ -6,6 +6,7 @@ import (
 	"github.com/twosson/kubeapt/internal/content"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/kubernetes/pkg/apis/core"
+	"sort"
 )
 
 type ConfigMapSummary struct{}
@@ -54,7 +55,14 @@ func (cm *ConfigMapDetails) Content(ctx context.Context, object runtime.Object, 
 		tableCol("Value"),
 	}
 
-	for k, v := range configMap.Data {
+	var keys []string
+	for k := range configMap.Data {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
+	for _, k := range keys {
+		v := configMap.Data[k]
 		row := content.TableRow{
 			"Key":   content.NewStringText(k),
 			"Value": content.NewStringText(v),
