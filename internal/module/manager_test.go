@@ -2,6 +2,7 @@ package module
 
 import (
 	"github.com/stretchr/testify/require"
+	"github.com/twosson/kubeapt/internal/cluster"
 	"github.com/twosson/kubeapt/internal/cluster/fake"
 	"github.com/twosson/kubeapt/internal/log"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -29,13 +30,21 @@ func TestManager(t *testing.T) {
 	manager.Unload()
 }
 
+func TestManager_badClient(t *testing.T) {
+	var badClient cluster.ClientInterface
+	_, err := NewManager(badClient, "default", log.NopLogger())
+	require.Error(t, err)
+}
+
 func newUnstructured(apiVersion, kind, namespace, name string) *unstructured.Unstructured {
-	return &unstructured.Unstructured{Object: map[string]interface{}{
-		"apiVersion": apiVersion,
-		"kind":       kind,
-		"metadata": map[string]interface{}{
-			"namespace": namespace,
-			"name":      name,
+	return &unstructured.Unstructured{
+		Object: map[string]interface{}{
+			"apiVersion": apiVersion,
+			"kind":       kind,
+			"metadata": map[string]interface{}{
+				"namespace": namespace,
+				"name":      name,
+			},
 		},
-	}}
+	}
 }
