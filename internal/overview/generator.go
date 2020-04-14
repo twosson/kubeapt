@@ -57,13 +57,20 @@ var (
 		ObjectType: &batch.CronJob{},
 		Titles:     ResourceTitle{List: "Cron Jobs", Object: "Cron Job"},
 		Transforms: cronJobTransforms,
-		Sections: map[string]ContentSection{
-			"main": ContentSection{
+		Sections: []ContentSection{
+			{
 				Views: []ViewFactory{
 					NewCronJobSummary,
 					NewCronJobJobs,
 					NewEventList,
 				},
+				Title: "Summary",
+			},
+			{
+				Views: []ViewFactory{
+					NewCronJobSummary,
+				},
+				Title: "Resource Viewer",
 			},
 		},
 	})
@@ -75,8 +82,8 @@ var (
 		ObjectType: &extensions.DaemonSet{},
 		Titles:     ResourceTitle{List: "Daemon Sets", Object: "Daemon Set"},
 		Transforms: daemonSetTransforms,
-		Sections: map[string]ContentSection{
-			"main": ContentSection{
+		Sections: []ContentSection{
+			{
 				Views: []ViewFactory{
 					NewDaemonSetSummary,
 					NewContainerSummary,
@@ -94,8 +101,8 @@ var (
 		ObjectType: &extensions.Deployment{},
 		Titles:     ResourceTitle{List: "Deployments", Object: "Deployment"},
 		Transforms: deploymentTransforms,
-		Sections: map[string]ContentSection{
-			"main": ContentSection{
+		Sections: []ContentSection{
+			{
 				Views: []ViewFactory{
 					NewDeploymentSummary,
 					NewContainerSummary,
@@ -114,8 +121,8 @@ var (
 
 		Titles:     ResourceTitle{List: "Jobs", Object: "Job"},
 		Transforms: jobTransforms,
-		Sections: map[string]ContentSection{
-			"main": ContentSection{
+		Sections: []ContentSection{
+			{
 				Views: []ViewFactory{
 					NewJobSummary,
 					NewContainerSummary,
@@ -133,8 +140,8 @@ var (
 		ObjectType: &core.Pod{},
 		Titles:     ResourceTitle{List: "Pods", Object: "Pod"},
 		Transforms: podTransforms,
-		Sections: map[string]ContentSection{
-			"main": ContentSection{
+		Sections: []ContentSection{
+			{
 				Views: []ViewFactory{
 					NewPodSummary,
 					NewPodContainer,
@@ -153,8 +160,8 @@ var (
 		ObjectType: &extensions.ReplicaSet{},
 		Titles:     ResourceTitle{List: "Replica Sets", Object: "Replica Set"},
 		Transforms: replicaSetTransforms,
-		Sections: map[string]ContentSection{
-			"main": ContentSection{
+		Sections: []ContentSection{
+			{
 				Views: []ViewFactory{
 					NewReplicaSetSummary,
 					NewContainerSummary,
@@ -172,8 +179,8 @@ var (
 		ObjectType: &core.ReplicationController{},
 		Titles:     ResourceTitle{List: "Replication Controllers", Object: "Replication Controller"},
 		Transforms: replicationControllerTransforms,
-		Sections: map[string]ContentSection{
-			"main": ContentSection{
+		Sections: []ContentSection{
+			{
 				Views: []ViewFactory{
 					NewReplicationControllerSummary,
 					NewContainerSummary,
@@ -190,8 +197,8 @@ var (
 		ObjectType: &apps.StatefulSet{},
 		Titles:     ResourceTitle{List: "Stateful Sets", Object: "Stateful Set"},
 		Transforms: statefulSetTransforms,
-		Sections: map[string]ContentSection{
-			"main": ContentSection{
+		Sections: []ContentSection{
+			{
 				Views: []ViewFactory{
 					NewStatefulSetSummary,
 					NewContainerSummary,
@@ -222,8 +229,8 @@ var (
 		ObjectType: &v1beta1.Ingress{},
 		Titles:     ResourceTitle{List: "Ingresses", Object: "Ingress"},
 		Transforms: ingressTransforms,
-		Sections: map[string]ContentSection{
-			"main": ContentSection{
+		Sections: []ContentSection{
+			{
 				Views: []ViewFactory{
 					NewIngressSummary,
 					NewIngressDetails,
@@ -240,8 +247,8 @@ var (
 		ObjectType: &core.Service{},
 		Titles:     ResourceTitle{List: "Services", Object: "Service"},
 		Transforms: serviceTransforms,
-		Sections: map[string]ContentSection{
-			"main": ContentSection{
+		Sections: []ContentSection{
+			{
 				Views: []ViewFactory{
 					NewServiceSummary,
 					NewServicePort,
@@ -266,8 +273,8 @@ var (
 		ObjectType: &core.ConfigMap{},
 		Titles:     ResourceTitle{List: "Config Maps", Object: "Config Map"},
 		Transforms: configMapTransforms,
-		Sections: map[string]ContentSection{
-			"main": ContentSection{
+		Sections: []ContentSection{
+			{
 				Views: []ViewFactory{
 					NewConfigMapSummary,
 					NewConfigMapDetails,
@@ -284,8 +291,8 @@ var (
 		ObjectType: &core.PersistentVolumeClaim{},
 		Titles:     ResourceTitle{List: "Persistent Volume Claims", Object: "Persistent Volume Claim"},
 		Transforms: pvcTransforms,
-		Sections: map[string]ContentSection{
-			"main": ContentSection{
+		Sections: []ContentSection{
+			{
 				Views: []ViewFactory{
 					NewPersistentVolumeClaimSummary,
 					NewEventList,
@@ -301,8 +308,8 @@ var (
 		ObjectType: &core.Secret{},
 		Titles:     ResourceTitle{List: "Secrets", Object: "Secret"},
 		Transforms: secretTransforms,
-		Sections: map[string]ContentSection{
-			"main": ContentSection{
+		Sections: []ContentSection{
+			{
 				Views: []ViewFactory{
 					NewSecretSummary,
 					NewSecretData,
@@ -319,8 +326,8 @@ var (
 		ObjectType: &core.ServiceAccount{},
 		Titles:     ResourceTitle{List: "Service Accounts", Object: "Service Account"},
 		Transforms: serviceAccountTransforms,
-		Sections: map[string]ContentSection{
-			"main": ContentSection{
+		Sections: []ContentSection{
+			{
 				Views: []ViewFactory{
 					NewServiceAccountSummary,
 					NewEventList,
@@ -350,8 +357,8 @@ var (
 		ObjectType: &rbac.Role{},
 		Titles:     ResourceTitle{List: "Roles", Object: "Role"},
 		Transforms: roleTransforms,
-		Sections: map[string]ContentSection{
-			"main": ContentSection{
+		Sections: []ContentSection{
+			{
 				Views: []ViewFactory{
 					NewRoleSummary,
 					NewRoleRule,
@@ -368,8 +375,8 @@ var (
 		ObjectType: &rbac.RoleBinding{},
 		Titles:     ResourceTitle{List: "Role Bindings", Object: "Role Binding"},
 		Transforms: roleBindingTransforms,
-		Sections: map[string]ContentSection{
-			"main": ContentSection{
+		Sections: []ContentSection{
+			{
 				Views: []ViewFactory{
 					NewRoleBindingSummary,
 					NewRoleBindingSubjects,

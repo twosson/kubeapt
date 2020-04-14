@@ -5,6 +5,7 @@ import (
 )
 
 type ContentResponse struct {
+	Title string    `json:"title,omitempty"`
 	Views []Content `json:"views,omitempty"`
 }
 
