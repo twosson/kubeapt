@@ -1,8 +1,12 @@
-import queryString from 'query-string'
-import mocks from './mock'
+import queryString from 'query-string';
+
+import mocks from './mock';
 
 declare global {
-  interface Window { API_BASE: string }
+  interface Window {
+    API_BASE: string;
+    EventSource(uri: string): void;
+  }
 }
 
 const { fetch } = window
@@ -11,7 +15,7 @@ export function getAPIBase() {
   return window.API_BASE || process.env.API_BASE
 }
 
-export const POLL_WAIT = 5
+export const POLL_WAIT: number = 5
 
 interface BuildRequestParams {
   endpoint: string;
@@ -19,7 +23,7 @@ interface BuildRequestParams {
   data?: object;
 }
 
-async function buildRequest (params: BuildRequestParams) {
+async function buildRequest(params: BuildRequestParams) {
   const apiBase = getAPIBase()
 
   const { endpoint, method, data } = params
@@ -68,7 +72,7 @@ export function getNamespaces() {
   return buildRequest(params)
 }
 
-export function getContentsUrl(path: string, namespace: string, poll?: string) {
+export function getContentsUrl(path: string, namespace: string, poll?: number) {
   if (!path || path === '/') return null
   let query = ''
   if (namespace) query = `?${queryString.stringify({ namespace })}`
