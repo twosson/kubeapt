@@ -68,7 +68,7 @@ var (
 			},
 			{
 				Views: []ViewFactory{
-					NewCronJobSummary,
+					NewResourceViewerStub,
 				},
 				Title: "Resource Viewer",
 			},
