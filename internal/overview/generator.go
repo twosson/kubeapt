@@ -84,11 +84,18 @@ var (
 		Transforms: daemonSetTransforms,
 		Sections: []ContentSection{
 			{
+				Title: "Summary",
 				Views: []ViewFactory{
 					NewDaemonSetSummary,
 					NewContainerSummary,
 					NewPodList,
 					NewEventList,
+				},
+			},
+			{
+				Title: "Resource Viewer",
+				Views: []ViewFactory{
+					newWorkloadInspectorView,
 				},
 			},
 		},
@@ -103,11 +110,18 @@ var (
 		Transforms: deploymentTransforms,
 		Sections: []ContentSection{
 			{
+				Title: "Summary",
 				Views: []ViewFactory{
 					NewDeploymentSummary,
 					NewContainerSummary,
 					NewDeploymentReplicaSets,
 					NewEventList,
+				},
+			},
+			{
+				Title: "Resource Viewer",
+				Views: []ViewFactory{
+					newWorkloadInspectorView,
 				},
 			},
 		},
@@ -142,12 +156,19 @@ var (
 		Transforms: podTransforms,
 		Sections: []ContentSection{
 			{
+				Title: "Summary",
 				Views: []ViewFactory{
 					NewPodSummary,
 					NewPodContainer,
 					NewPodCondition,
 					NewPodVolume,
 					NewEventList,
+				},
+			},
+			{
+				Title: "Resource Viewer",
+				Views: []ViewFactory{
+					newWorkloadInspectorView,
 				},
 			},
 		},
@@ -162,11 +183,18 @@ var (
 		Transforms: replicaSetTransforms,
 		Sections: []ContentSection{
 			{
+				Title: "Summary",
 				Views: []ViewFactory{
 					NewReplicaSetSummary,
 					NewContainerSummary,
 					NewPodList,
 					NewEventList,
+				},
+			},
+			{
+				Title: "Resource Viewer",
+				Views: []ViewFactory{
+					newWorkloadInspectorView,
 				},
 			},
 		},
@@ -181,11 +209,18 @@ var (
 		Transforms: replicationControllerTransforms,
 		Sections: []ContentSection{
 			{
+				Title: "Summary",
 				Views: []ViewFactory{
 					NewReplicationControllerSummary,
 					NewContainerSummary,
 					NewPodList,
 					NewEventList,
+				},
+			},
+			{
+				Title: "Resource Viewer",
+				Views: []ViewFactory{
+					newWorkloadInspectorView,
 				},
 			},
 		},
@@ -199,11 +234,18 @@ var (
 		Transforms: statefulSetTransforms,
 		Sections: []ContentSection{
 			{
+				Title: "Summary",
 				Views: []ViewFactory{
 					NewStatefulSetSummary,
 					NewContainerSummary,
 					NewPodList,
 					NewEventList,
+				},
+			},
+			{
+				Title: "Resource Viewer",
+				Views: []ViewFactory{
+					newWorkloadInspectorView,
 				},
 			},
 		},
@@ -231,10 +273,17 @@ var (
 		Transforms: ingressTransforms,
 		Sections: []ContentSection{
 			{
+				Title: "Summary",
 				Views: []ViewFactory{
 					NewIngressSummary,
 					NewIngressDetails,
 					NewEventList,
+				},
+			},
+			{
+				Title: "Resource Viewer",
+				Views: []ViewFactory{
+					newWorkloadInspectorView,
 				},
 			},
 		},
@@ -249,11 +298,18 @@ var (
 		Transforms: serviceTransforms,
 		Sections: []ContentSection{
 			{
+				Title: "Summary",
 				Views: []ViewFactory{
 					NewServiceSummary,
 					NewServicePort,
 					NewServiceEndpoints,
 					NewEventList,
+				},
+			},
+			{
+				Title: "Resource Viewer",
+				Views: []ViewFactory{
+					newWorkloadInspectorView,
 				},
 			},
 		},
